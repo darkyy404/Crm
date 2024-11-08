@@ -67,5 +67,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.material3)
+    implementation("com.google.accompanist:accompanist-coil:0.15.0")
+    implementation("io.coil-kt:coil-compose:2.0.0")
+    implementation("io.coil-kt:coil-svg:2.0.0")
+
+
 
 }

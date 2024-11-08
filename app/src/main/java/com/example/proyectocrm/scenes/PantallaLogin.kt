@@ -1,5 +1,6 @@
 package com.example.proyectocrm.scenes
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,7 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,15 +33,15 @@ fun LoginScreen() {
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
     val rememberMe = remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFEDF1F3)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center // Coloca los elementos desde la parte superior
     ) {
         // Icono superior
+        Spacer(modifier = Modifier.height(16.dp))
         Icon(
             painter = painterResource(id = R.drawable.ic_logo), // Reemplaza con el recurso del ícono
             contentDescription = "Logo",
@@ -75,7 +79,8 @@ fun LoginScreen() {
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_email), // Ícono de email
-                    contentDescription = "Email Icon"
+                    contentDescription = "Email Icon",
+                    modifier = Modifier.size(20.dp)
                 )
             },
             modifier = Modifier
@@ -106,13 +111,17 @@ fun LoginScreen() {
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_lock), // Ícono de candado
-                    contentDescription = "Lock Icon"
+                    contentDescription = "Lock Icon",
+                    modifier = Modifier.size(20.dp)
+
                 )
             },
             trailingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon"
+                    contentDescription = "Visibility Icon",
+                    modifier = Modifier.size(20.dp)
+
                 )
             },
             modifier = Modifier
@@ -208,7 +217,9 @@ fun LoginScreen() {
             Icon(
                 painter = painterResource(id = R.drawable.ic_google), // Ícono de Google
                 contentDescription = "Google Icon",
-                tint = Color.Unspecified
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Continuar con Google", color = Color.Black)
@@ -229,7 +240,8 @@ fun LoginScreen() {
             Icon(
                 painter = painterResource(id = R.drawable.ic_facebook), // Ícono de Facebook
                 contentDescription = "Facebook Icon",
-                tint = Color.Unspecified
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "Continuar con Facebook", color = Color.Black)
