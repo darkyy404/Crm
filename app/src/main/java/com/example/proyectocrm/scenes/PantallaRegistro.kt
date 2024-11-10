@@ -44,28 +44,36 @@ fun RegisterScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Ícono de retroceso
-        Icon(
-            imageVector = Icons.Default.ArrowBack, // Icono de retroceso
-            contentDescription = "Back",
+        Row(
             modifier = Modifier
-                .padding(16.dp)
-                .size(24.dp)
-                .clickable { /* Acción de volver atrás */ },
-            tint = Color.Black
-        )
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                modifier = Modifier
+                    .padding(start = 16.dp) // Espacio a la izquierda
+                    .size(24.dp)
+                    .clickable { /* Acción de volver atrás */ },
+                tint = Color.Black
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-        Text(
-            text = "Registro",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1F1F1F)
-        )
+            Text(
+                text = "Registro",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1F1F1F),
+                modifier = Modifier.weight(8f),
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.weight(1f)) // Espacio a la derecha para balancear
+        }
         Text(
             text = "¡Crea una cuenta para continuar!",
             fontSize = 14.sp,
