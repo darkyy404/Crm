@@ -82,33 +82,13 @@ fun RegisterScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de nombre
-        CustomOutlinedTextField(value = name.value, label = "Nombre", onValueChange = { name.value = it })
-
-        // Campo de apellido
-        CustomOutlinedTextField(value = lastName.value, label = "Apellidos", onValueChange = { lastName.value = it })
-
-        // Campo de email
-        CustomOutlinedTextField(value = email.value, label = "Email", onValueChange = { email.value = it })
-
-        // Campo de número telefónico
-        CustomOutlinedTextField(value = phone.value, label = "Número Telefónico", onValueChange = { phone.value = it })
-
-        // Campo de contraseña
-        CustomOutlinedTextField(
-            value = password.value,
-            label = "Establecer contraseña",
-            onValueChange = { password.value = it },
-            isPassword = true
-        )
-
-        // Campo de confirmar contraseña
-        CustomOutlinedTextField(
-            value = confirmPassword.value,
-            label = "Repetir contraseña",
-            onValueChange = { confirmPassword.value = it },
-            isPassword = true
-        )
+        // Campos de registro con etiquetas
+        RegisterField("Nombre", name.value, onValueChange = { name.value = it })
+        RegisterField("Apellidos", lastName.value, onValueChange = { lastName.value = it })
+        RegisterField("Email", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
+        RegisterField("Número Telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
+        RegisterField("Establecer contraseña", password.value, onValueChange = { password.value = it }, isPassword = true)
+        RegisterField("Repetir contraseña", confirmPassword.value, onValueChange = { confirmPassword.value = it }, isPassword = true)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -143,39 +123,50 @@ fun RegisterScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomOutlinedTextField(
-    value: TextFieldValue,
+fun RegisterField(
     label: String,
+    value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, color = Color.Gray) },
+    Column(
         modifier = Modifier
             .fillMaxWidth(0.85f)
-            .height(56.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            containerColor = Color(0xFFF5F5F5),
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color.Transparent,
-            cursorColor = Color.Black // Color del cursor
-        ),
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        trailingIcon = if (isPassword) {
-            {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon",
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        } else null,
-        shape = RoundedCornerShape(8.dp),
-        singleLine = true
-    )
+            .padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
 
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(label, color = Color.Gray) }, // Para que el texto sea gris
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color(0xFFF5F5F5),
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.Black
+            ),
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            trailingIcon = if (isPassword) {
+                {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
+                        contentDescription = "Visibility Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else null,
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    }
 }
 
 @Preview(showBackground = true)
