@@ -16,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.proyectocrm.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-
+import androidx.compose.ui.text.input.VisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,122 +54,60 @@ fun RegisterScreen() {
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 modifier = Modifier
-                    .padding(start = 16.dp) // Espacio a la izquierda
+                    .padding(start = 16.dp)
                     .size(24.dp)
                     .clickable { /* Acción de volver atrás */ },
                 tint = Color.Black
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = "Registro",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1F1F1F),
-                modifier = Modifier.weight(8f),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.weight(1f)) // Espacio a la derecha para balancear
         }
+
+        Text(
+            text = "Registro",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1F1F1F),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = "¡Crea una cuenta para continuar!",
             fontSize = 14.sp,
             color = Color(0xFF5A5A5A),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Start,
+            modifier = Modifier.padding(start = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Campo de nombre
-        OutlinedTextField(
-            value = name.value,
-            onValueChange = { name.value = it },
-            label = { Text("Nombre") },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        CustomOutlinedTextField(value = name.value, label = "Nombre", onValueChange = { name.value = it })
 
         // Campo de apellido
-        OutlinedTextField(
-            value = lastName.value,
-            onValueChange = { lastName.value = it },
-            label = { Text("Apellidos") },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        CustomOutlinedTextField(value = lastName.value, label = "Apellidos", onValueChange = { lastName.value = it })
 
         // Campo de email
-        OutlinedTextField(
-            value = email.value,
-            onValueChange = { email.value = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        CustomOutlinedTextField(value = email.value, label = "Email", onValueChange = { email.value = it })
 
         // Campo de número telefónico
-        OutlinedTextField(
-            value = phone.value,
-            onValueChange = { phone.value = it },
-            label = { Text("Número Telefónico") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        CustomOutlinedTextField(value = phone.value, label = "Número Telefónico", onValueChange = { phone.value = it })
 
         // Campo de contraseña
-        OutlinedTextField(
+        CustomOutlinedTextField(
             value = password.value,
+            label = "Establecer contraseña",
             onValueChange = { password.value = it },
-            label = { Text("Establecer contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon",
-                    modifier = Modifier.size(20.dp)
-
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
+            isPassword = true
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
         // Campo de confirmar contraseña
-        OutlinedTextField(
+        CustomOutlinedTextField(
             value = confirmPassword.value,
+            label = "Repetir contraseña",
             onValueChange = { confirmPassword.value = it },
-            label = { Text("Repetir contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon",
-                    modifier = Modifier.size(20.dp)
-
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
+            isPassword = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -202,6 +139,43 @@ fun RegisterScreen() {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomOutlinedTextField(
+    value: TextFieldValue,
+    label: String,
+    onValueChange: (TextFieldValue) -> Unit,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, color = Color.Gray) },
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .height(56.dp),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            containerColor = Color(0xFFF5F5F5),
+            unfocusedBorderColor = Color.Transparent,
+            focusedBorderColor = Color.Transparent,
+            cursorColor = Color.Black // Color del cursor
+        ),
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        trailingIcon = if (isPassword) {
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
+                    contentDescription = "Visibility Icon",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        } else null,
+        shape = RoundedCornerShape(8.dp),
+        singleLine = true
+    )
+
 }
 
 @Preview(showBackground = true)
