@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,23 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen() {
+fun PantallaRegistro(navHostController: NavHostController) {
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val lastName = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
@@ -40,7 +39,7 @@ fun RegisterScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEDF1F3)), // Fondo gris claro
+            .background(Color(0xFFEDF1F3)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -53,130 +52,52 @@ fun RegisterScreen() {
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = "Volver atrás",
                 modifier = Modifier
-                    .padding(start = 16.dp) // Espacio a la izquierda
+                    .padding(start = 16.dp)
                     .size(24.dp)
-                    .clickable { /* Acción de volver atrás */ },
+                    .clickable {
+                        navHostController.navigate("pantalla_anterior") // Cambia "pantalla_anterior" por la ruta real
+                    },
                 tint = Color.Black
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = "Registro",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1F1F1F),
-                modifier = Modifier.weight(8f),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.weight(1f)) // Espacio a la derecha para balancear
         }
+
+        Text(
+            text = "Registro",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1F1F1F),
+            textAlign = TextAlign.Start,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = "¡Crea una cuenta para continuar!",
             fontSize = 14.sp,
             color = Color(0xFF5A5A5A),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Campo de nombre
-        OutlinedTextField(
-            value = name.value,
-            onValueChange = { name.value = it },
-            label = { Text("Nombre") },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Campo de apellido
-        OutlinedTextField(
-            value = lastName.value,
-            onValueChange = { lastName.value = it },
-            label = { Text("Apellidos") },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Campo de email
-        OutlinedTextField(
-            value = email.value,
-            onValueChange = { email.value = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Campo de número telefónico
-        OutlinedTextField(
-            value = phone.value,
-            onValueChange = { phone.value = it },
-            label = { Text("Número Telefónico") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Campo de contraseña
-        OutlinedTextField(
-            value = password.value,
-            onValueChange = { password.value = it },
-            label = { Text("Establecer contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon",
-                    modifier = Modifier.size(20.dp)
-
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Campo de confirmar contraseña
-        OutlinedTextField(
-            value = confirmPassword.value,
-            onValueChange = { confirmPassword.value = it },
-            label = { Text("Repetir contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            trailingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                    contentDescription = "Visibility Icon",
-                    modifier = Modifier.size(20.dp)
-
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .height(56.dp)
+            textAlign = TextAlign.Start,
+            modifier = Modifier.padding(start = 16.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campos de registro
+        RegisterField("Nombre", name.value, onValueChange = { name.value = it })
+        RegisterField("Apellidos", lastName.value, onValueChange = { lastName.value = it })
+        RegisterField("Email", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
+        RegisterField("Número Telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
+        RegisterField("Establecer contraseña", password.value, onValueChange = { password.value = it }, isPassword = true)
+        RegisterField("Repetir contraseña", confirmPassword.value, onValueChange = { confirmPassword.value = it }, isPassword = true)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
-            onClick = { /* Acción de registro */ },
+            onClick = {
+                navHostController.navigate("pantalla_principal") // Cambia "pantalla_principal" por la ruta real
+            },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .height(50.dp),
@@ -198,14 +119,58 @@ fun RegisterScreen() {
                 text = "Iniciar sesión",
                 color = Color(0xFF007AFF),
                 fontSize = 14.sp,
-                modifier = Modifier.clickable { /* Acción de iniciar sesión */ }
+                modifier = Modifier.clickable {
+                    navHostController.navigate("pantalla_login") // Cambia "pantalla_login" por la ruta real
+                }
             )
         }
     }
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PreviewRegisterScreen() {
-    RegisterScreen()
+fun RegisterField(
+    label: String,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    isPassword: Boolean = false
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text(label, color = Color.Gray) },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color(0xFFF5F5F5),
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.Black
+            ),
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            trailingIcon = if (isPassword) {
+                {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_visibility),
+                        contentDescription = "Mostrar contraseña",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else null,
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
+    }
 }
