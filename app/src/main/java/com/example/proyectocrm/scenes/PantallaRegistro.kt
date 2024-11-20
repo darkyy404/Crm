@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,22 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.proyectocrm.R
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.navigation.NavHostController
+import com.example.proyectocrm.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen() {
+fun PantallaRegistro(navHostController: NavHostController) {
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val lastName = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
@@ -39,7 +39,7 @@ fun RegisterScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFEDF1F3)), // Fondo gris claro
+            .background(Color(0xFFEDF1F3)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -52,11 +52,13 @@ fun RegisterScreen() {
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = "Volver atrás",
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .size(24.dp)
-                    .clickable { /* Acción de volver atrás */ },
+                    .clickable {
+                        navHostController.navigate("pantalla_anterior") // Cambia "pantalla_anterior" por la ruta real
+                    },
                 tint = Color.Black
             )
         }
@@ -82,7 +84,7 @@ fun RegisterScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campos de registro con etiquetas
+        // Campos de registro
         RegisterField("Nombre", name.value, onValueChange = { name.value = it })
         RegisterField("Apellidos", lastName.value, onValueChange = { lastName.value = it })
         RegisterField("Email", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
@@ -93,7 +95,9 @@ fun RegisterScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /* Acción de registro */ },
+            onClick = {
+                navHostController.navigate("pantalla_principal") // Cambia "pantalla_principal" por la ruta real
+            },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .height(50.dp),
@@ -115,7 +119,9 @@ fun RegisterScreen() {
                 text = "Iniciar sesión",
                 color = Color(0xFF007AFF),
                 fontSize = 14.sp,
-                modifier = Modifier.clickable { /* Acción de iniciar sesión */ }
+                modifier = Modifier.clickable {
+                    navHostController.navigate("pantalla_login") // Cambia "pantalla_login" por la ruta real
+                }
             )
         }
     }
@@ -145,7 +151,7 @@ fun RegisterField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(label, color = Color.Gray) }, // Para que el texto sea gris
+            placeholder = { Text(label, color = Color.Gray) },
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 containerColor = Color(0xFFF5F5F5),
@@ -157,8 +163,8 @@ fun RegisterField(
             trailingIcon = if (isPassword) {
                 {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_visibility), // Ícono de visibilidad
-                        contentDescription = "Visibility Icon",
+                        painter = painterResource(id = R.drawable.ic_visibility),
+                        contentDescription = "Mostrar contraseña",
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -167,10 +173,4 @@ fun RegisterField(
             singleLine = true
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewRegisterScreen() {
-    RegisterScreen()
 }
