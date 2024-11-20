@@ -13,7 +13,7 @@ import com.example.proyectocrm.scenes.PantallaRegistro
 @Composable
 fun NavigationWrapper (navHostController: NavHostController) {
 
-    NavHost(navController = navHostController, startDestination = "pantallaRegistro") {
+    NavHost(navController = navHostController, startDestination = "pantallaLogin") {
 
         composable ("pantallaLogin") { PantallaLogin(navHostController) }
         composable ("pantallaRegistro") {PantallaRegistro(navHostController)}

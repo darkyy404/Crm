@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "314609855316",
+    "project_id": "crmkotlin-1efde",
+    "storage_bucket": "crmkotlin-1efde.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:314609855316:android:257b8fd5b6ffa3c17976c1",
+        "android_client_info": {
+          "package_name": "com.example.proyectocrm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "314609855316-momoqbcv11cil4bu7ru88ktuqten9al2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2jrDewWII8nCfczVuAfSuYixWKq96UP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "314609855316-momoqbcv11cil4bu7ru88ktuqten9al2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
