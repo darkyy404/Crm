@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -25,16 +26,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaRegistro(navHostController: NavHostController) {
+    val auth = FirebaseAuth.getInstance()
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val lastName = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val phone = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
     val confirmPassword = remember { mutableStateOf(TextFieldValue("")) }
+    val message = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -96,7 +100,11 @@ fun PantallaRegistro(navHostController: NavHostController) {
 
         Button(
             onClick = {
-                navHostController.navigate("pantalla_principal") // Cambia "pantalla_principal" por la ruta real
+                if (password.value.text == confirmPassword.value.text) {
+                    registerUser(auth, email.value.text, password.value.text, message, navHostController)
+                } else {
+                    message.value = "Las contraseñas no coinciden"
+                }
             },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -105,6 +113,17 @@ fun PantallaRegistro(navHostController: NavHostController) {
             shape = RoundedCornerShape(8.dp)
         ) {
             Text(text = "Registro", color = Color.White, fontWeight = FontWeight.SemiBold)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Mensaje de estado
+        if (message.value.isNotEmpty()) {
+            Text(
+                text = message.value,
+                color = if (message.value.startsWith("Error")) Color.Red else Color.Green,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -172,5 +191,28 @@ fun RegisterField(
             shape = RoundedCornerShape(8.dp),
             singleLine = true
         )
+    }
+}
+
+// Función de registro original
+fun registerUser(
+    auth: FirebaseAuth,
+    email: String,
+    password: String,
+    message: MutableState<String>,
+    navHostController: NavHostController
+) {
+    if (email.isNotBlank() && password.isNotBlank()) {
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    message.value = "Registro exitoso"
+                    navHostController.navigate("PantallaMenu") // Cambia "PantallaMenu" por tu ruta de menú
+                } else {
+                    message.value = "Error: ${task.exception?.message}"
+                }
+            }
+    } else {
+        message.value = "Por favor, completa todos los campos"
     }
 }
