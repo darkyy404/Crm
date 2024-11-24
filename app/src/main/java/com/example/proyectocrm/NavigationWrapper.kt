@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
+import com.example.proyectocrm.scenes.PantallaRecuperarContrasena
+
 
 
 
@@ -17,5 +19,9 @@ fun NavigationWrapper (navHostController: NavHostController) {
 
         composable ("pantallaLogin") { PantallaLogin(navHostController) }
         composable ("pantallaRegistro") {PantallaRegistro(navHostController)}
+        composable ("pantallaRecuperarContrasena") { PantallaRecuperarContrasena(navHostController) }
+
     }
 }
+
+

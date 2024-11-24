@@ -40,7 +40,7 @@ fun PantallaLogin(navHostController: NavHostController) {
 
     // Configuración de Google Sign-In
     val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("YOUR_FIREBASE_WEB_CLIENT_ID")
+        .requestIdToken("7577710609-mg8frfipf87pj48bi3ndne4t62tqjp86.apps.googleusercontent.com")
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
@@ -166,7 +166,7 @@ fun PantallaLogin(navHostController: NavHostController) {
             Text(
                 text = "¿Olvidaste tu contraseña?",
                 color = Color(0xFF007AFF),
-                modifier = Modifier.clickable { navHostController.navigate("RecuperarContraseña") }
+                modifier = Modifier.clickable { navHostController.navigate("pantallaRecuperarContrasena") }
             )
         }
 
