@@ -1,6 +1,5 @@
 
 package com.example.proyectocrm.scenes
-
 import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -120,13 +117,6 @@ fun PantallaLogin(navHostController: NavHostController) {
             onValueChange = { email.value = it },
             label = { Text("Email") },
             placeholder = { Text("yourname@gmail.com", color = Color.Gray) },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_email),
-                    contentDescription = "Icono de email",
-                    modifier = Modifier.size(20.dp)
-                )
-            },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .height(56.dp),
@@ -148,13 +138,6 @@ fun PantallaLogin(navHostController: NavHostController) {
             label = { Text("Contraseña") },
             placeholder = { Text("******", color = Color.Gray) },
             visualTransformation = PasswordVisualTransformation(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_lock),
-                    contentDescription = "Icono de candado",
-                    modifier = Modifier.size(20.dp)
-                )
-            },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .height(56.dp),
@@ -169,7 +152,6 @@ fun PantallaLogin(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Recordarme y Olvidaste tu contraseña
         Row(
             modifier = Modifier.fillMaxWidth(0.85f),
             verticalAlignment = Alignment.CenterVertically
@@ -204,7 +186,24 @@ fun PantallaLogin(navHostController: NavHostController) {
             Text(text = "Iniciar sesión", color = Color.White, fontWeight = FontWeight.SemiBold)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Separador -- o --
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(0.85f)
+        ) {
+            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.weight(1f))
+            Text(
+                text = " o ",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Botón de Google
         Button(
@@ -224,8 +223,28 @@ fun PantallaLogin(navHostController: NavHostController) {
             Spacer(modifier = Modifier.width(8.dp))
             Text("Continuar con Google", color = Color.Black)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "¿No tienes una cuenta? ",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+            Text(
+                text = "Registrarse",
+                color = Color(0xFF007AFF),
+                fontSize = 14.sp,
+                modifier = Modifier.clickable { navHostController.navigate("PantallaRegistro") }
+            )
+        }
     }
 }
+
 
 
 fun loginUser(

@@ -61,7 +61,7 @@ fun PantallaRegistro(navHostController: NavHostController) {
                     .padding(start = 16.dp)
                     .size(24.dp)
                     .clickable {
-                        navHostController.navigate("pantalla_anterior") // Cambia "pantalla_anterior" por la ruta real
+                        navHostController.navigate("PantallaLogin")
                     },
                 tint = Color.Black
             )
@@ -139,7 +139,7 @@ fun PantallaRegistro(navHostController: NavHostController) {
                 color = Color(0xFF007AFF),
                 fontSize = 14.sp,
                 modifier = Modifier.clickable {
-                    navHostController.navigate("pantalla_login") // Cambia "pantalla_login" por la ruta real
+                    navHostController.navigate("PantallaLogin")
                 }
             )
         }
@@ -194,7 +194,7 @@ fun RegisterField(
     }
 }
 
-// Función de registro original
+// Función de registro
 fun registerUser(
     auth: FirebaseAuth,
     email: String,
@@ -207,7 +207,7 @@ fun registerUser(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     message.value = "Registro exitoso"
-                    navHostController.navigate("PantallaMenu") // Cambia "PantallaMenu" por tu ruta de menú
+                    navHostController.navigate("PantallaLogin")
                 } else {
                     message.value = "Error: ${task.exception?.message}"
                 }
