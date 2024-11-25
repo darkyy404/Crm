@@ -77,6 +77,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-coil:0.15.0")
     implementation("io.coil-kt:coil-compose:2.0.0")
     implementation("io.coil-kt:coil-svg:2.0.0")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 
     // Test
     testImplementation(libs.junit)
