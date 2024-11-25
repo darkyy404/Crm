@@ -16,9 +16,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-    }
+        maven {
+            url = uri("https://jitpack.io") // Asegúrate de usar `uri` correctamente aquí
+        }
 }
 
 rootProject.name = "ProyectoCrm"
 include(":app")
- 
+}
