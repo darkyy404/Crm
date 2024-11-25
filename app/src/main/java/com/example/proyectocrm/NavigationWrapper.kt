@@ -4,13 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import com.example.proyectocrm.scenes.PantallaHome
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
 import com.example.proyectocrm.scenes.PantallaRecuperarContrasena
-
-
-
+import com.example.proyectocrm.scenes.home.PantallaHome
 
 
 @Composable
