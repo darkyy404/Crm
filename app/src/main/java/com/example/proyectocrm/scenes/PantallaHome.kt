@@ -2,7 +2,7 @@ package com.example.proyectocrm.scenes
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -11,6 +11,9 @@ import androidx.navigation.NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaHome(navHostController: NavHostController) {
+    // Estado para rastrear la pestaña seleccionada
+    var selectedTab by remember { mutableStateOf(0) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -26,16 +29,28 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Pestañas (estructura básica, sin funcionalidad)
-        TabRow(selectedTabIndex = 0, modifier = Modifier.fillMaxWidth()) {
-            Tab(selected = true, onClick = {}, text = { Text("Leads") })
-            Tab(selected = false, onClick = {}, text = { Text("Ventas") })
-            Tab(selected = false, onClick = {}, text = { Text("Pedidos") })
+        // Pestañas
+        TabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
+            Tab(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                text = { Text("Leads") }
+            )
+            Tab(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                text = { Text("Ventas") }
+            )
+            Tab(
+                selected = selectedTab == 2,
+                onClick = { selectedTab = 2 },
+                text = { Text("Pedidos") }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Contenedor de gráfico (placeholder por ahora)
+        // Contenedor de gráfico
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -43,7 +58,11 @@ fun PantallaHome(navHostController: NavHostController) {
                 .padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "Gráfico Placeholder", style = MaterialTheme.typography.bodyMedium)
+            when (selectedTab) {
+                0 -> Text(text = "Gráfico de Leads", style = MaterialTheme.typography.bodyMedium)
+                1 -> Text(text = "Gráfico de Ventas", style = MaterialTheme.typography.bodyMedium)
+                2 -> Text(text = "Gráfico de Pedidos", style = MaterialTheme.typography.bodyMedium)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
