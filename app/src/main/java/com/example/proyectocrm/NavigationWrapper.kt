@@ -7,7 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
 import com.example.proyectocrm.scenes.PantallaRecuperarContrasena
-import com.example.proyectocrm.scenes.home.PantallaHome
+import com.example.proyectocrm.scenes.PantallaHome
 
 
 @Composable
