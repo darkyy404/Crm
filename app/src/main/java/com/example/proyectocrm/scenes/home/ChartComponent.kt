@@ -1,14 +1,15 @@
-package com.example.proyectocrm.scenes.home
-
-import android.graphics.Color
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-
+import com.github.mikephil.charting.utils.ColorTemplate
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
 fun LineChartComponent(dataPoints: List<Entry>, label: String) {
@@ -16,48 +17,42 @@ fun LineChartComponent(dataPoints: List<Entry>, label: String) {
         factory = { context ->
             LineChart(context).apply {
                 // Configuración básica del gráfico
-                description.isEnabled = false // Ocultar descripción
-                setDrawGridBackground(false) // Ocultar fondo del grid
-                axisRight.isEnabled = false // Ocultar eje derecho
+                description.isEnabled = false
+                setDrawGridBackground(false)
+                axisRight.isEnabled = false
 
                 // Configuración del eje X
-                xAxis.apply {
-                    position = XAxis.XAxisPosition.BOTTOM // Posición en la parte inferior
-                    setDrawGridLines(false) // Ocultar líneas del grid
-                    textColor = android.graphics.Color.BLACK
-                }
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                xAxis.setDrawGridLines(false)
+                xAxis.textColor = android.graphics.Color.BLACK
+                xAxis.granularity = 1f
 
                 // Configuración del eje Y
-                axisLeft.apply {
-                    textColor = android.graphics.Color.BLACK
-                }
+                axisLeft.textColor = android.graphics.Color.BLACK
+                axisLeft.setDrawGridLines(false)
+                axisLeft.axisMinimum = 0f
 
                 // Animaciones
                 animateX(1000)
                 animateY(1000)
-
-                // Datos del gráfico
-                val lineDataSet = LineDataSet(dataPoints, label).apply {
-                    color = android.graphics.Color.BLUE
-                    valueTextColor = android.graphics.Color.BLACK
-                    lineWidth = 2f
-                    setCircleColor(android.graphics.Color.BLUE)
-                    circleRadius = 4f
-                }
-                data = LineData(lineDataSet)
             }
         },
         update = { chart ->
-            val lineDataSet = LineDataSet(dataPoints, label).apply {
-                color = android.graphics.Color.BLUE
-                valueTextColor = android.graphics.Color.BLACK
+            // Configurar los datos del gráfico
+            val dataSet = LineDataSet(dataPoints, label).apply {
+                color = ColorTemplate.MATERIAL_COLORS[0]
+                setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
                 lineWidth = 2f
-                setCircleColor(android.graphics.Color.BLUE)
                 circleRadius = 4f
+                setDrawValues(false) // No mostrar valores en cada punto
             }
-            chart.data = LineData(lineDataSet)
-            chart.invalidate() // Actualizar el gráfico
-        }
+
+            // Asignar los datos al gráfico
+            chart.data = LineData(dataSet)
+            chart.invalidate() // Refrescar el gráfico
+        },
+        modifier = androidx.compose.ui.Modifier
+            .fillMaxWidth()
+            .height(200.dp) // Asegurar que el gráfico tenga suficiente espacio
     )
 }
-
