@@ -57,7 +57,7 @@ fun PantallaLogin(navHostController: NavHostController) {
                     auth.signInWithCredential(credential).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             message.value = "Inicio de sesión con Google exitoso"
-                            navHostController.navigate("PantallaMenu")
+                            navHostController.navigate("PantallaHome")
                         } else {
                             message.value = "Error: ${task.exception?.message}"
                         }
@@ -258,7 +258,7 @@ fun loginUser(
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 message.value = "Inicio de sesión exitoso"
-                navHostController.navigate("PantallaMenu")
+                navHostController.navigate("PantallaHome")
             } else {
                 message.value = "Error: ${task.exception?.message}"
             }
