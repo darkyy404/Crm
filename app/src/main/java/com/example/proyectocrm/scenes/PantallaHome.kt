@@ -42,7 +42,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
             salesData = ChartRepository.getChartData("sales")
 
-            ordersData = ChartRepository.getChartData("orders")
+            ordersData = ChartRepository.getChartData("orders_chart")
         }
     }
     Column(
