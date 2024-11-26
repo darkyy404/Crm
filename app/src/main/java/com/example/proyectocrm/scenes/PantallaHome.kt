@@ -2,21 +2,28 @@ package com.example.proyectocrm.scenes
 
 import LineChartComponent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.proyectocrm.R
+import com.example.proyectocrm.components.OrderList
 import com.github.mikephil.charting.data.Entry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaHome(navHostController: NavHostController) {
-    // Estado para rastrear la pestaña seleccionada
     var selectedTab by remember { mutableStateOf(0) }
 
-    // Datos de ejemplo para los gráficos
+    // Datos para los gráficos
     val leadsData = listOf(
         Entry(1f, 5000f),
         Entry(2f, 7000f),
@@ -42,37 +49,63 @@ fun PantallaHome(navHostController: NavHostController) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título principal
-        Text(
-            text = "Dashboard",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.align(Alignment.Start)
-        )
+        // Título y perfil
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Dashboard",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                contentDescription = "Perfil",
+                tint = Color(0xFF007AFF),
+                modifier = Modifier.size(32.dp)
+            )
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Pestañas
-        TabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
+        // Tabs
+        TabRow(
+            selectedTabIndex = selectedTab,
+            modifier = Modifier.fillMaxWidth(),
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = Color(0xFF007AFF)
+                )
+            }
+        ) {
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Leads") }
+                text = { Text("Leads") },
+                selectedContentColor = Color(0xFF007AFF),
+                unselectedContentColor = Color.Gray
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Ventas") }
+                text = { Text("Ventas") },
+                selectedContentColor = Color(0xFF007AFF),
+                unselectedContentColor = Color.Gray
             )
             Tab(
                 selected = selectedTab == 2,
                 onClick = { selectedTab = 2 },
-                text = { Text("Pedidos") }
+                text = { Text("Pedidos") },
+                selectedContentColor = Color(0xFF007AFF),
+                unselectedContentColor = Color.Gray
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Contenedor de gráfico con ChartComponent
+        // Gráfico
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,12 +122,12 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Información de balance total
+        // Balance total
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF3366FF))
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -103,26 +136,26 @@ fun PantallaHome(navHostController: NavHostController) {
                 Text(
                     text = "Balance Total",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "782,123.56€",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "+1.7% este mes",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = Color(0xFFEDF1F3)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Últimos pedidos (placeholder)
+        // Últimos pedidos
         Text(
             text = "Últimos Pedidos",
             style = MaterialTheme.typography.headlineSmall,
@@ -131,15 +164,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Placeholder para la lista de pedidos
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(100.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Pedidos Placeholder", style = MaterialTheme.typography.bodyMedium)
-        }
+        // Componente de lista de pedidos
+        OrderList()
     }
 }
