@@ -12,6 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ProyectoCrm"
         tools:targetApi="31">
+
+        <!-- Declarar MainActivity como lanzador -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,10 +21,15 @@
             android:theme="@style/Theme.ProyectoCrm">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Declarar la actividad para Google Sign-In -->
+        <activity
+            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+            android:exported="false" />
     </application>
+
 
 </manifest>
