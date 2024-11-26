@@ -69,6 +69,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics") // Firebase Analytics
     implementation("com.google.firebase:firebase-auth") // Firebase Authentication
+    implementation ("com.google.firebase:firebase-firestore-ktx")
+
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
