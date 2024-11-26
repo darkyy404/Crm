@@ -38,11 +38,15 @@ fun PantallaHome(navHostController: NavHostController) {
     // porque depende de `Unit` (que no cambia).
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            leadsData = ChartRepository.getChartData("leads")
+            leadsData = ChartRepository.getChartData("leads").distinctBy { it.x }
+            salesData = ChartRepository.getChartData("sales").distinctBy { it.x }
+            ordersData = ChartRepository.getChartData("orders_chart").distinctBy { it.x }
 
-            salesData = ChartRepository.getChartData("sales")
 
-            ordersData = ChartRepository.getChartData("orders_chart")
+            // Imprime los datos cargados para verificar
+                println("Leads Data: $leadsData")
+            println("Sales Data: $salesData")
+            println("Orders Data: $ordersData")
         }
     }
     Column(
