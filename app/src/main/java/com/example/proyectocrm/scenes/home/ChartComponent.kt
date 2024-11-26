@@ -16,43 +16,41 @@ fun LineChartComponent(dataPoints: List<Entry>, label: String) {
     AndroidView(
         factory = { context ->
             LineChart(context).apply {
-                // Configuración básica del gráfico
                 description.isEnabled = false
                 setDrawGridBackground(false)
                 axisRight.isEnabled = false
 
-                // Configuración del eje X
-                xAxis.position = XAxis.XAxisPosition.BOTTOM
-                xAxis.setDrawGridLines(false)
-                xAxis.textColor = android.graphics.Color.BLACK
-                xAxis.granularity = 1f
+                xAxis.apply {
+                    position = XAxis.XAxisPosition.BOTTOM
+                    setDrawGridLines(false)
+                    textColor = android.graphics.Color.BLACK
+                    granularity = 1f
+                }
 
-                // Configuración del eje Y
-                axisLeft.textColor = android.graphics.Color.BLACK
-                axisLeft.setDrawGridLines(false)
-                axisLeft.axisMinimum = 0f
+                axisLeft.apply {
+                    textColor = android.graphics.Color.BLACK
+                    setDrawGridLines(false)
+                    axisMinimum = 0f
+                }
 
-                // Animaciones
                 animateX(1000)
                 animateY(1000)
             }
         },
         update = { chart ->
-            // Configurar los datos del gráfico
             val dataSet = LineDataSet(dataPoints, label).apply {
-                color = ColorTemplate.MATERIAL_COLORS[0]
-                setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
+                color = android.graphics.Color.parseColor("#007AFF")
+                setCircleColor(android.graphics.Color.parseColor("#3366FF"))
                 lineWidth = 2f
                 circleRadius = 4f
-                setDrawValues(false) // No mostrar valores en cada punto
+                setDrawValues(false)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
             }
-
-            // Asignar los datos al gráfico
             chart.data = LineData(dataSet)
-            chart.invalidate() // Refrescar el gráfico
+            chart.invalidate()
         },
         modifier = androidx.compose.ui.Modifier
             .fillMaxWidth()
-            .height(200.dp) // Asegurar que el gráfico tenga suficiente espacio
+            .height(200.dp)
     )
 }
