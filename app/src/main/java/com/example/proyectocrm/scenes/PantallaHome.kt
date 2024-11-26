@@ -2,9 +2,7 @@ package com.example.proyectocrm.scenes
 
 import LineChartComponent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -15,41 +13,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
+import com.example.proyectocrm.components.ChartRepository
 import com.example.proyectocrm.components.OrderList
 import com.github.mikephil.charting.data.Entry
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaHome(navHostController: NavHostController) {
     var selectedTab by remember { mutableStateOf(0) }
 
-    // Datos para los gráficos
-    val leadsData = listOf(
-        Entry(1f, 5000f),
-        Entry(2f, 7000f),
-        Entry(3f, 9000f),
-        Entry(4f, 8500f)
-    )
-    val salesData = listOf(
-        Entry(1f, 1.5f),
-        Entry(2f, 2.3f),
-        Entry(3f, 1.8f),
-        Entry(4f, 3.0f)
-    )
-    val ordersData = listOf(
-        Entry(1f, 200f),
-        Entry(2f, 400f),
-        Entry(3f, 600f),
-        Entry(4f, 800f)
-    )
+    // Estados para almacenar los datos de los gráficos correspondientes a cada pestaña.
+    // Estos datos se obtendrán dinámicamente desde Firebase.
+    var leadsData by remember { mutableStateOf<List<Entry>>(emptyList()) }
+    var salesData by remember { mutableStateOf<List<Entry>>(emptyList()) }
+    var ordersData by remember { mutableStateOf<List<Entry>>(emptyList()) }
 
+    // Esto asegura que cualquier tarea asíncrona que se lance aquí se cancelará automáticamente
+    // si el Composable deja de estar activo (por ejemplo, si el usuario cambia de pantalla).
+    val coroutineScope = rememberCoroutineScope()
+
+    // Efecto secundario que se ejecuta cuando se inicia este Composable.
+    // `LaunchedEffect(Unit)` asegura que el bloque se ejecutará solo una vez al inicio,
+    // porque depende de `Unit` (que no cambia).
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            leadsData = ChartRepository.getChartData("leads")
+
+            salesData = ChartRepository.getChartData("sales")
+
+            ordersData = ChartRepository.getChartData("orders")
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título y perfil
+        // Encabezado con el título del dashboard y el ícono de perfil
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -69,7 +71,7 @@ fun PantallaHome(navHostController: NavHostController) {
             )
         }
 
-        // Tabs
+        // Pestañas para seleccionar diferentes gráficos
         TabRow(
             selectedTabIndex = selectedTab,
             modifier = Modifier.fillMaxWidth(),
@@ -105,7 +107,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Gráfico
+        // Contenedor del gráfico
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,7 +124,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Balance total
+        // Tarjeta para mostrar el balance total
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -155,7 +157,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Últimos pedidos
+        // Título de la lista de pedidos
         Text(
             text = "Últimos Pedidos",
             style = MaterialTheme.typography.headlineSmall,
@@ -164,7 +166,7 @@ fun PantallaHome(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Componente de lista de pedidos
+        // Componente para la lista de pedidos
         OrderList()
     }
 }
