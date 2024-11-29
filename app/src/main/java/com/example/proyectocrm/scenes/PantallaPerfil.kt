@@ -19,14 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun PantallaPerfil(navHostController: NavHostController) {
     // Estados para almacenar los datos del usuario autenticado
     var userName by remember { mutableStateOf("Nombre del Usuario") }
     var userEmail by remember { mutableStateOf("usuario@email.com") }
+    var profileImageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen de perfil
 
     // Cargar los datos del usuario autenticado desde Firebase
     LaunchedEffect(Unit) {
@@ -34,6 +37,11 @@ fun PantallaPerfil(navHostController: NavHostController) {
         currentUser?.let {
             userName = it.displayName ?: "Nombre no disponible"
             userEmail = it.email ?: "Correo no disponible"
+
+            // Lógica para cargar la URL de la imagen desde Firestore
+            obtenerImagenDePerfil(it.uid) { url ->
+                profileImageUrl = url
+            }
         }
     }
 
@@ -52,25 +60,27 @@ fun PantallaPerfil(navHostController: NavHostController) {
                 .size(120.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            Image(
-                painter = painterResource(R.drawable.ic_profile_placeholder),
-                contentDescription = "Imagen de perfil",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_edit),
-                contentDescription = "Editar imagen",
-                tint = Color.White,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF007AFF))
-                    .padding(4.dp)
-            )
+            if (profileImageUrl != null) {
+                // Si se cargó una URL de Firebase, mostrar la imagen usando Coil
+                Image(
+                    painter = rememberImagePainter(profileImageUrl),
+                    contentDescription = "Imagen de perfil",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Mostrar un placeholder mientras la URL de la imagen se carga
+                Image(
+                    painter = painterResource(R.drawable.ic_profile_placeholder),
+                    contentDescription = "Imagen de perfil",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -124,6 +134,19 @@ fun PantallaPerfil(navHostController: NavHostController) {
     }
 }
 
+// Función para cargar la URL de la imagen desde Firestore
+fun obtenerImagenDePerfil(userId: String, onResult: (String?) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("users").document(userId).get()
+        .addOnSuccessListener { document ->
+            val imageUrl = document.getString("profileImageUri") // Campo donde se guarda la URL
+            onResult(imageUrl) // Retornar la URL al callback
+        }
+        .addOnFailureListener {
+            onResult(null) // En caso de error, retornar null
+        }
+}
+
 @Composable
 fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
     Row(
@@ -148,3 +171,4 @@ fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
         )
     }
 }
+
