@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,7 +102,16 @@ fun PantallaRegistro(navHostController: NavHostController) {
         Button(
             onClick = {
                 if (password.value.text == confirmPassword.value.text) {
-                    registerUser(auth, email.value.text, password.value.text, message, navHostController)
+                    registerUser(
+                        auth = auth,
+                        email = email.value.text,
+                        password = password.value.text,
+                        message = message,
+                        navHostController = navHostController,
+                        name = name.value.text,
+                        lastName = lastName.value.text,
+                        phone = phone.value.text
+                    )
                 } else {
                     message.value = "Las contraseñas no coinciden"
                 }
@@ -194,20 +204,42 @@ fun RegisterField(
     }
 }
 
-// Función de registro
+// Función de registro actualizada
 fun registerUser(
     auth: FirebaseAuth,
     email: String,
     password: String,
     message: MutableState<String>,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    name: String,
+    lastName: String,
+    phone: String
 ) {
     if (email.isNotBlank() && password.isNotBlank()) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    message.value = "Registro exitoso"
-                    navHostController.navigate("PantallaLogin")
+                    // Registro exitoso: guardar datos en Firestore
+                    val userId = auth.currentUser?.uid
+                    val db = FirebaseFirestore.getInstance()
+
+                    val userData = mapOf(
+                        "name" to name,
+                        "lastName" to lastName,
+                        "email" to email,
+                        "phone" to phone
+                    )
+
+                    userId?.let {
+                        db.collection("users").document(it).set(userData)
+                            .addOnSuccessListener {
+                                message.value = "Registro exitoso"
+                                navHostController.navigate("PantallaLogin")
+                            }
+                            .addOnFailureListener { e ->
+                                message.value = "Error al guardar datos: ${e.message}"
+                            }
+                    }
                 } else {
                     message.value = "Error: ${task.exception?.message}"
                 }
