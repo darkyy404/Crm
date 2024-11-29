@@ -8,6 +8,7 @@ import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
 import com.example.proyectocrm.scenes.PantallaRecuperarContrasena
 import com.example.proyectocrm.scenes.PantallaHome
+import com.example.proyectocrm.scenes.PantallaPerfil
 
 
 @Composable
@@ -19,6 +20,7 @@ fun NavigationWrapper (navHostController: NavHostController) {
         composable ("pantallaRegistro") {PantallaRegistro(navHostController)}
         composable ("pantallaRecuperarContrasena") { PantallaRecuperarContrasena(navHostController) }
         composable ("pantallaHome") { PantallaHome(navHostController) }
+        composable("pantallaPerfil") {PantallaPerfil(navHostController) }
 
     }
 }
