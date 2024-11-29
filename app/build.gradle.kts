@@ -83,7 +83,7 @@ dependencies {
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.animation.core.lint)
     implementation ("androidx.compose.material:material-icons-extended:<latest_version>")
-
+    implementation(libs.firebase.storage.ktx)
 
 
     // Test
