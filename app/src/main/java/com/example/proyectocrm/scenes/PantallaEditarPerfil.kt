@@ -1,6 +1,11 @@
 package com.example.proyectocrm.scenes
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -22,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -29,6 +35,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
@@ -45,7 +54,8 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     val currentUser = auth.currentUser
     val storage = FirebaseStorage.getInstance()
 
-    // Estados para los datos del usuario
+    val context = LocalContext.current
+
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
@@ -53,8 +63,22 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     val showPassword = remember { mutableStateOf(false) }
     var dialogState by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isDropdownExpanded by remember { mutableStateOf(false) }
 
-    // Lógica para cargar datos del usuario desde Firestore
+    // Launchers para galería y cámara
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> profileImageUri = uri }
+    )
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap ->
+            // Convertir Bitmap a URI si es necesario
+            profileImageUri = Uri.parse("path/to/generated/bitmap") // Implementa la lógica de guardado si es necesario
+        }
+    )
+
     LaunchedEffect(Unit) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid).get()
@@ -69,28 +93,14 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
         }
     }
 
-    // Launchers para galería y cámara
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> profileImageUri = uri }
-    )
-
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(),
-        onResult = { bitmap ->
-            // Lógica para convertir Bitmap a URI si es necesario
-            profileImageUri = Uri.parse("path/to/generated/bitmap") // Implementa la lógica de guardado
-        }
-    )
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFEDF1F3))
             .padding(16.dp),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Barra de navegación
+        // Barra de navegación con botones "Volver" y "Guardar"
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -142,50 +152,79 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Imagen de perfil
+        // Imagen de perfil con menú desplegable
         Box(
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(Color.Gray),
-            contentAlignment = Alignment.BottomEnd
+                .size(120.dp)
+                .align(Alignment.CenterHorizontally)
         ) {
             if (profileImageUri != null) {
                 Image(
                     painter = rememberImagePainter(profileImageUri),
                     contentDescription = "Imagen de perfil",
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                Image(
+                    painter = painterResource(R.drawable.ic_profile_placeholder),
                     contentDescription = "Imagen predeterminada",
-                    modifier = Modifier.size(100.dp),
-                    tint = Color.White
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
             }
+
             Icon(
-                painter = painterResource(id = R.drawable.ic_camera),
-                contentDescription = "Seleccionar imagen",
+                painter = painterResource(R.drawable.ic_camera),
+                contentDescription = "Editar imagen",
+                tint = Color.White,
                 modifier = Modifier
-                    .size(32.dp)
+                    .align(Alignment.BottomEnd)
+                    .size(28.dp)
                     .clip(CircleShape)
-                    .background(Color.Blue)
-                    .clickable { galleryLauncher.launch("image/*") },
-                tint = Color.White
+                    .background(Color(0xFF007AFF))
+                    .clickable { checkAndRequestCameraPermission(context) { isDropdownExpanded = true } }
+                    .padding(4.dp)
             )
+
+            // Menú desplegable
+            DropdownMenu(
+                expanded = isDropdownExpanded,
+                onDismissRequest = { isDropdownExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    onClick = {
+                        isDropdownExpanded = false
+                        galleryLauncher.launch("image/*") // Seleccionar desde la galería
+                    },
+                    text = { Text("Seleccionar desde galería") }
+                )
+                DropdownMenuItem(
+                    onClick = {
+                        isDropdownExpanded = false
+                        cameraLauncher.launch(null) // Tomar foto con la cámara
+                    },
+                    text = { Text("Tomar foto con la cámara") }
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Campos editables
         RegisterField("Nombre", name.value, onValueChange = { name.value = it })
+        Spacer(modifier = Modifier.height(16.dp))
         RegisterField("Correo electrónico", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
+        Spacer(modifier = Modifier.height(16.dp))
         RegisterField("Contraseña", password.value, onValueChange = { password.value = it }, keyboardType = KeyboardType.Password, isPassword = true)
+        Spacer(modifier = Modifier.height(16.dp))
         RegisterField("Número telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Diálogo de éxito/error
         dialogState?.let { (success, message) ->
@@ -200,6 +239,20 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 }
             )
         }
+    }
+}
+
+// Verificar y solicitar permiso de la cámara
+fun checkAndRequestCameraPermission(context: Context, onPermissionGranted: () -> Unit) {
+    val cameraPermission = Manifest.permission.CAMERA
+    if (ContextCompat.checkSelfPermission(context, cameraPermission) == PackageManager.PERMISSION_GRANTED) {
+        onPermissionGranted() // Permiso ya concedido
+    } else {
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(cameraPermission),
+            100 // Código de solicitud
+        )
     }
 }
 
