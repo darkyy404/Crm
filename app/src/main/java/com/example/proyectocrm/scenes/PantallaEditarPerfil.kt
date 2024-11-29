@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,6 +37,8 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     // Estados para los datos del usuario
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
+    val username = remember { mutableStateOf(TextFieldValue("")) }
+    val password = remember { mutableStateOf(TextFieldValue("")) }
     val phone = remember { mutableStateOf(TextFieldValue("")) }
     val message = remember { mutableStateOf("") }
 
@@ -46,6 +49,7 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 .addOnSuccessListener { document ->
                     name.value = TextFieldValue(document.getString("name") ?: "")
                     email.value = TextFieldValue(document.getString("email") ?: "")
+                    username.value = TextFieldValue(document.getString("username") ?: "")
                     phone.value = TextFieldValue(document.getString("phone") ?: "")
                 }
                 .addOnFailureListener {
@@ -82,7 +86,14 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 contentDescription = "Guardar",
                 modifier = Modifier
                     .clickable {
-                        guardarDatosEnFirestore(currentUser?.uid, name.value.text, email.value.text, phone.value.text, message)
+                        guardarDatosEnFirestore(
+                            currentUser?.uid,
+                            name.value.text,
+                            email.value.text,
+                            username.value.text,
+                            phone.value.text,
+                            message
+                        )
                     }
                     .size(24.dp),
                 tint = Color(0xFF007AFF)
@@ -91,17 +102,28 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Imagen de perfil
+        // Imagen de perfil editable
         Box(
             modifier = Modifier
                 .size(100.dp)
                 .background(Color.LightGray, CircleShape),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.BottomEnd
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_profile_placeholder),
                 contentDescription = "Imagen de perfil",
-                modifier = Modifier.size(60.dp),
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape),
+                tint = Color.White
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_edit),
+                contentDescription = "Editar imagen",
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(Color(0xFF007AFF), CircleShape)
+                    .padding(4.dp),
                 tint = Color.White
             )
         }
@@ -111,6 +133,14 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
         // Campos editables
         EditProfileField("Nombre", name.value, onValueChange = { name.value = it })
         EditProfileField("Correo electrónico", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
+        EditProfileField("Nombre de usuario", username.value, onValueChange = { username.value = it })
+        EditProfileField(
+            "Contraseña",
+            password.value,
+            onValueChange = { password.value = it },
+            keyboardType = KeyboardType.Password,
+            isPassword = true
+        )
         EditProfileField("Número telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -172,6 +202,7 @@ fun guardarDatosEnFirestore(
     userId: String?,
     name: String,
     email: String,
+    username: String,
     phone: String,
     message: MutableState<String>
 ) {
@@ -184,6 +215,7 @@ fun guardarDatosEnFirestore(
     val userData = mapOf(
         "name" to name,
         "email" to email,
+        "username" to username,
         "phone" to phone
     )
 
