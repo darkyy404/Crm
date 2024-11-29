@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -14,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -36,7 +34,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -65,53 +62,55 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     val phone = remember { mutableStateOf(TextFieldValue("")) }
     val showPassword = remember { mutableStateOf(false) }
     var dialogState by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
-    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
-    var isDropdownExpanded by remember { mutableStateOf(false) }
+    var profileImageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen de perfil
+    var isDropdownExpanded by remember { mutableStateOf(false) }// Estado del menú desplegable
 
-    // Launchers para galería y cámara
+    // Launchers para manejar la galería y la cámara
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> profileImageUri = uri }
+        contract = ActivityResultContracts.GetContent(), // Contrato para obtener contenido
+        onResult = { uri -> profileImageUri = uri } // Actualiza el URI con el resultado seleccionado
     )
 
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(),
+        contract = ActivityResultContracts.TakePicturePreview(), // Contrato para tomar una foto
         onResult = { bitmap ->
+            // Convierte el Bitmap obtenido en un URI temporal
             if (bitmap != null) {
-                // Convertir el Bitmap a un Uri temporal usando FileProvider
-                val cacheDir = context.cacheDir // Obtén el directorio de caché del contexto
-                val file = File(cacheDir, "profile_image_${System.currentTimeMillis()}.jpg")
+                val cacheDir = context.cacheDir // Obtiene la carpeta de caché de la aplicación
+                val file = File(cacheDir, "profile_image_${System.currentTimeMillis()}.jpg") // Archivo temporal
                 file.outputStream().use {
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) // Comprime la imagen
                 }
                 profileImageUri = FileProvider.getUriForFile(
                     context,
-                    "${context.packageName}.provider",
+                    "${context.packageName}.provider", // Proveedor configurado en el manifest
                     file
                 )
             } else {
-                // Mostrar un mensaje de error si la captura falla
+                // Si falla, muestra un mensaje de error
                 dialogState = Pair(false, "No se pudo capturar la imagen.")
             }
         }
     )
 
-
-
+    // Carga inicial de datos del usuario desde Firestore
     LaunchedEffect(Unit) {
         currentUser?.let { user ->
-            db.collection("users").document(user.uid).get()
+            db.collection("users").document(user.uid).get() // Obtiene el documento del usuario
                 .addOnSuccessListener { document ->
-                    name.value = TextFieldValue(document.getString("name") ?: "")
-                    email.value = TextFieldValue(document.getString("email") ?: "")
-                    phone.value = TextFieldValue(document.getString("phone") ?: "")
+                    name.value = TextFieldValue(document.getString("name") ?: "") // Nombre
+                    email.value = TextFieldValue(document.getString("email") ?: "") // Email
+                    phone.value = TextFieldValue(document.getString("phone") ?: "") // Teléfono
+                    document.getString("profileImageUri")?.let { uri ->
+                        profileImageUri = Uri.parse(uri) // URI de la imagen de perfil
+                    }
                 }
                 .addOnFailureListener {
+                    // Maneja errores al cargar datos
                     dialogState = Pair(false, "Error al cargar los datos: ${it.message}")
                 }
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -145,7 +144,8 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                             name.value.text,
                             email.value.text,
                             password.value.text,
-                            phone.value.text
+                            phone.value.text,
+                            profileImageUri
                         ) { success ->
                             dialogState = if (success) {
                                 Pair(true, "Datos actualizados correctamente")
@@ -210,7 +210,6 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                     .padding(4.dp)
             )
 
-            // Menú desplegable
             DropdownMenu(
                 expanded = isDropdownExpanded,
                 onDismissRequest = { isDropdownExpanded = false }
@@ -218,14 +217,14 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 DropdownMenuItem(
                     onClick = {
                         isDropdownExpanded = false
-                        galleryLauncher.launch("image/*") // Seleccionar desde la galería
+                        galleryLauncher.launch("image/*")
                     },
                     text = { Text("Seleccionar desde galería") }
                 )
                 DropdownMenuItem(
                     onClick = {
                         isDropdownExpanded = false
-                        cameraLauncher.launch(null) // Tomar foto con la cámara
+                        cameraLauncher.launch(null)
                     },
                     text = { Text("Tomar foto con la cámara") }
                 )
@@ -234,7 +233,6 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Campos editables
         RegisterField("Nombre", name.value, onValueChange = { name.value = it })
         Spacer(modifier = Modifier.height(16.dp))
         RegisterField("Correo electrónico", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
@@ -245,7 +243,6 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Diálogo de éxito/error
         dialogState?.let { (success, message) ->
             AlertDialog(
                 onDismissRequest = { dialogState = null },
@@ -261,31 +258,34 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     }
 }
 
-// Verificar y solicitar permiso de la cámara
-fun checkAndRequestCameraPermission(context: Context, onPermissionGranted: () -> Unit) {
-    val cameraPermission = Manifest.permission.CAMERA
-    if (ContextCompat.checkSelfPermission(context, cameraPermission) == PackageManager.PERMISSION_GRANTED) {
-        onPermissionGranted() // Permiso ya concedido
-    } else {
-        ActivityCompat.requestPermissions(
-            context as Activity,
-            arrayOf(cameraPermission),
-            100 // Código de solicitud
-        )
-    }
-}
-
-// Función para guardar datos
-fun guardarDatosEnFirestore(userId: String?, name: String, email: String, password: String, phone: String, onResult: (Boolean) -> Unit) {
+// Función para guardar datos en Firestore, incluida la URI
+fun guardarDatosEnFirestore(
+    userId: String?,
+    name: String,
+    email: String,
+    password: String,
+    phone: String,
+    profileImageUri: Uri?,
+    onResult: (Boolean) -> Unit
+) {
     if (userId == null) {
         onResult(false)
         return
     }
 
     val db = FirebaseFirestore.getInstance()
-    val userData = mapOf("name" to name, "email" to email, "password" to password, "phone" to phone)
+    val userData = mutableMapOf(
+        "name" to name,
+        "email" to email,
+        "password" to password,
+        "phone" to phone
+    )
 
-    db.collection("users").document(userId).update(userData)
+    profileImageUri?.let {
+        userData["profileImageUri"] = it.toString()
+    }
+
+    db.collection("users").document(userId).set(userData)
         .addOnSuccessListener { onResult(true) }
         .addOnFailureListener { onResult(false) }
 }
@@ -297,4 +297,18 @@ fun subirImagenAFirebase(storage: FirebaseStorage, uri: Uri, onResult: (String?,
     storageRef.putFile(uri)
         .addOnSuccessListener { onResult("Imagen subida exitosamente", null) }
         .addOnFailureListener { e -> onResult(null, e.message) }
+}
+
+// Verificar y solicitar permisos
+fun checkAndRequestCameraPermission(context: Context, onPermissionGranted: () -> Unit) {
+    val cameraPermission = Manifest.permission.CAMERA
+    if (ContextCompat.checkSelfPermission(context, cameraPermission) == PackageManager.PERMISSION_GRANTED) {
+        onPermissionGranted()
+    } else {
+        ActivityCompat.requestPermissions(
+            context as Activity,
+            arrayOf(cameraPermission),
+            100
+        )
+    }
 }
