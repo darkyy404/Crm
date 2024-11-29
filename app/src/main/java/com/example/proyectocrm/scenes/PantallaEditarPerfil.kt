@@ -1,6 +1,5 @@
 package com.example.proyectocrm.scenes
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,199 +8,221 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import java.util.UUID // Biblioteca para generar nombres únicos para archivos
+import java.util.UUID
 
-/**
- * Pantalla de edición de perfil.
- * Permite al usuario actualizar su imagen de perfil seleccionándola desde la galería,
- * capturándola con la cámara y subiéndola al almacenamiento de Firebase.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaEditarPerfil(navHostController: NavHostController) {
-    // Obtenemos las instancias de FirebaseAuth y FirebaseStorage
-    val currentUser = FirebaseAuth.getInstance().currentUser // Usuario autenticado actual
-    val storage = FirebaseStorage.getInstance() // Referencia al almacenamiento de Firebase
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+    val currentUser = auth.currentUser
+    val storage = FirebaseStorage.getInstance()
 
-    // Estados para manejar la imagen seleccionada o capturada
-    var profileImage by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) } // Bitmap para la imagen capturada desde la cámara
-    var message by remember { mutableStateOf("") } // Mensaje para mostrar el estado de las operaciones
+    // Estados para los datos del usuario
+    val name = remember { mutableStateOf(TextFieldValue("")) }
+    val email = remember { mutableStateOf(TextFieldValue("")) }
+    val password = remember { mutableStateOf(TextFieldValue("")) }
+    val phone = remember { mutableStateOf(TextFieldValue("")) }
+    val showPassword = remember { mutableStateOf(false) }
+    var dialogState by remember { mutableStateOf<Pair<Boolean, String>?>(null) }
+    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Launcher para seleccionar una imagen desde la galería
+    // Lógica para cargar datos del usuario desde Firestore
+    LaunchedEffect(Unit) {
+        currentUser?.let { user ->
+            db.collection("users").document(user.uid).get()
+                .addOnSuccessListener { document ->
+                    name.value = TextFieldValue(document.getString("name") ?: "")
+                    email.value = TextFieldValue(document.getString("email") ?: "")
+                    phone.value = TextFieldValue(document.getString("phone") ?: "")
+                }
+                .addOnFailureListener {
+                    dialogState = Pair(false, "Error al cargar los datos: ${it.message}")
+                }
+        }
+    }
+
+    // Launchers para galería y cámara
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(), // Contrato para seleccionar contenido genérico
-        onResult = { uri ->
-            profileImage = uri // Guardamos la URI seleccionada
-            message = "Imagen seleccionada exitosamente" // Notificamos al usuario
-        }
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> profileImageUri = uri }
     )
 
-    // Launcher para capturar una imagen con la cámara
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview(), // Contrato para capturar imágenes
-        onResult = { capturedBitmap ->
-            bitmap = capturedBitmap // Guardamos el bitmap capturado
-            message = if (bitmap != null) "Imagen capturada exitosamente" else "No se pudo capturar la imagen"
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap ->
+            // Lógica para convertir Bitmap a URI si es necesario
+            profileImageUri = Uri.parse("path/to/generated/bitmap") // Implementa la lógica de guardado
         }
     )
 
-    // Contenedor principal de la pantalla
     Column(
         modifier = Modifier
-            .fillMaxSize() // Ocupa toda la pantalla
-            .background(Color(0xFFEDF1F3)) // Fondo claro
-            .padding(16.dp), // Margen interno
-        horizontalAlignment = Alignment.CenterHorizontally // Alineación central horizontal
+            .fillMaxSize()
+            .background(Color(0xFFEDF1F3))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        // Barra superior con título y botón de guardar
+        // Barra de navegación
         Row(
             modifier = Modifier
-                .fillMaxWidth() // Ocupa todo el ancho
+                .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically // Elementos alineados verticalmente
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Editar Perfil", fontSize = 20.sp, modifier = Modifier.weight(1f)) // Título
-            Button(
-                onClick = {
-                    // Intento de subida de imagen al almacenamiento de Firebase
-                    profileImage?.let {
-                        uploadImageToFirebase(it) { successMessage, errorMessage ->
-                            message = successMessage ?: errorMessage ?: "" // Mostrar mensaje según el resultado
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Volver",
+                modifier = Modifier
+                    .clickable { navHostController.popBackStack() }
+                    .size(24.dp),
+                tint = Color.Black
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Guardar",
+                modifier = Modifier
+                    .clickable {
+                        guardarDatosEnFirestore(
+                            currentUser?.uid,
+                            name.value.text,
+                            email.value.text,
+                            password.value.text,
+                            phone.value.text
+                        ) { success ->
+                            dialogState = if (success) {
+                                Pair(true, "Datos actualizados correctamente")
+                            } else {
+                                Pair(false, "Error al actualizar los datos")
+                            }
+                        }
+
+                        profileImageUri?.let { uri ->
+                            subirImagenAFirebase(storage, uri) { successMessage, errorMessage ->
+                                dialogState = if (successMessage != null) {
+                                    Pair(true, successMessage)
+                                } else {
+                                    Pair(false, errorMessage ?: "Error desconocido al subir imagen")
+                                }
+                            }
                         }
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)) // Color del botón
-            ) {
-                Text("Guardar", color = Color.White) // Etiqueta del botón
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp)) // Espaciador para separación
-
-        // Imagen de perfil con opciones para editar
-        Box(
-            modifier = Modifier
-                .size(120.dp) // Tamaño del contenedor de la imagen
-                .background(Color.Gray, CircleShape), // Fondo gris con forma circular
-            contentAlignment = Alignment.BottomEnd // Icono de edición en la esquina inferior derecha
-        ) {
-            when {
-                bitmap != null -> {
-                    // Mostrar el bitmap capturado
-                    Image(
-                        bitmap = bitmap!!.asImageBitmap(),
-                        contentDescription = "Imagen de perfil",
-                        modifier = Modifier.size(120.dp).clip(CircleShape), // Imagen circular
-                        contentScale = ContentScale.Crop // Ajuste de imagen
-                    )
-                }
-                profileImage != null -> {
-                    // Mostrar la imagen seleccionada desde la galería
-                    Image(
-                        painter = rememberImagePainter(profileImage), // Usamos Coil para cargar la imagen
-                        contentDescription = "Imagen seleccionada",
-                        modifier = Modifier.size(120.dp).clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-                else -> {
-                    // Mostrar icono predeterminado si no hay imagen
-                    Icon(
-                        painter = painterResource(R.drawable.ic_profile_placeholder), // Recurso del icono
-                        contentDescription = "Icono predeterminado",
-                        modifier = Modifier.size(120.dp).clip(CircleShape),
-                        tint = Color.White // Color del icono
-                    )
-                }
-            }
-
-            // Icono para abrir opciones de edición
-            Icon(
-                painter = painterResource(R.drawable.ic_camera), // Icono de cámara
-                contentDescription = "Seleccionar Imagen",
-                modifier = Modifier
-                    .size(32.dp) // Tamaño del icono
-                    .background(Color(0xFF007AFF), CircleShape) // Fondo azul
-                    .padding(8.dp)
-                    .clickable {
-                        galleryLauncher.launch("image/*") // Abrir galería al hacer clic
-                    },
-                tint = Color.White // Color del icono
+                    .size(24.dp),
+                tint = Color(0xFF007AFF)
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botones para elegir entre galería o cámara
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly // Distribución uniforme
+        // Imagen de perfil
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color.Gray),
+            contentAlignment = Alignment.BottomEnd
         ) {
-            Button(
-                onClick = { galleryLauncher.launch("image/*") }, // Acción de abrir galería
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
-            ) {
-                Text("Galería", color = Color.White)
+            if (profileImageUri != null) {
+                Image(
+                    painter = rememberImagePainter(profileImageUri),
+                    contentDescription = "Imagen de perfil",
+                    modifier = Modifier.size(100.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                    contentDescription = "Imagen predeterminada",
+                    modifier = Modifier.size(100.dp),
+                    tint = Color.White
+                )
             }
-            Button(
-                onClick = { cameraLauncher.launch(null) }, // Acción de abrir cámara
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
-            ) {
-                Text("Cámara", color = Color.White)
-            }
+            Icon(
+                painter = painterResource(id = R.drawable.ic_camera),
+                contentDescription = "Seleccionar imagen",
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.Blue)
+                    .clickable { galleryLauncher.launch("image/*") },
+                tint = Color.White
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mostrar mensajes de estado
-        if (message.isNotEmpty()) {
-            Text(
-                text = message,
-                color = if (message.startsWith("Error")) Color.Red else Color.Green, // Color según éxito o error
-                modifier = Modifier.padding(16.dp)
+        // Campos editables
+        RegisterField("Nombre", name.value, onValueChange = { name.value = it })
+        RegisterField("Correo electrónico", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
+        RegisterField("Contraseña", password.value, onValueChange = { password.value = it }, keyboardType = KeyboardType.Password, isPassword = true)
+        RegisterField("Número telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Diálogo de éxito/error
+        dialogState?.let { (success, message) ->
+            AlertDialog(
+                onDismissRequest = { dialogState = null },
+                title = { Text(if (success) "¡Éxito!" else "Error") },
+                text = { Text(message) },
+                confirmButton = {
+                    TextButton(onClick = { dialogState = null }) {
+                        Text("OK")
+                    }
+                }
             )
         }
     }
 }
 
-/**
- * Función para subir imágenes al almacenamiento de Firebase.
- *
- * @param uri La URI de la imagen seleccionada.
- * @param onResult Callback para manejar el éxito o error de la operación.
- */
-fun uploadImageToFirebase(uri: Uri, onResult: (String?, String?) -> Unit) {
-    val storageRef = FirebaseStorage.getInstance().reference // Referencia al almacenamiento de Firebase
-    val fileName = "profile_images/${UUID.randomUUID()}.jpg" // Nombre único basado en UUID
-    val profileRef = storageRef.child(fileName) // Ruta del archivo en el almacenamiento
+// Función para guardar datos
+fun guardarDatosEnFirestore(userId: String?, name: String, email: String, password: String, phone: String, onResult: (Boolean) -> Unit) {
+    if (userId == null) {
+        onResult(false)
+        return
+    }
 
-    // Subir archivo a Firebase Storage
-    profileRef.putFile(uri)
-        .addOnSuccessListener {
-            // Obtener la URL de descarga tras subir exitosamente
-            profileRef.downloadUrl.addOnSuccessListener { uri ->
-                val downloadUrl = uri.toString()
-                onResult("Imagen subida exitosamente: $downloadUrl", null) // Llamar al callback con éxito
-            }
-        }
-        .addOnFailureListener { e ->
-            onResult(null, "Error al subir la imagen: ${e.message}") // Llamar al callback con error
-        }
+    val db = FirebaseFirestore.getInstance()
+    val userData = mapOf("name" to name, "email" to email, "password" to password, "phone" to phone)
+
+    db.collection("users").document(userId).update(userData)
+        .addOnSuccessListener { onResult(true) }
+        .addOnFailureListener { onResult(false) }
+}
+
+// Subir imagen a Firebase Storage
+fun subirImagenAFirebase(storage: FirebaseStorage, uri: Uri, onResult: (String?, String?) -> Unit) {
+    val storageRef = storage.reference.child("profile_images/${UUID.randomUUID()}.jpg")
+
+    storageRef.putFile(uri)
+        .addOnSuccessListener { onResult("Imagen subida exitosamente", null) }
+        .addOnFailureListener { e -> onResult(null, e.message) }
 }
