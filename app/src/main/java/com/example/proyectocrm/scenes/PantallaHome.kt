@@ -67,12 +67,14 @@ fun PantallaHome(navHostController: NavHostController) {
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.weight(1f)
             )
-            Icon(
-                painter = painterResource(id = R.drawable.ic_profile_placeholder),
-                contentDescription = "Perfil",
-                tint = Color(0xFF007AFF),
-                modifier = Modifier.size(32.dp)
-            )
+            IconButton(onClick = { navHostController.navigate("pantallaEditarPerfil") }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_profile_placeholder),
+                    contentDescription = "Perfil",
+                    tint = Color(0xFF007AFF),
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
 
         // Pestañas para seleccionar diferentes gráficos
