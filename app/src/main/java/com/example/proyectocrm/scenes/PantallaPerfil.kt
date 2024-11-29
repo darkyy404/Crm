@@ -17,12 +17,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun PantallaPerfil(navHostController: NavHostController) {
-    // Variables para almacenar el nombre y correo
+    // Estados para almacenar los datos del usuario autenticado
     var userName by remember { mutableStateOf("Nombre del Usuario") }
     var userEmail by remember { mutableStateOf("usuario@email.com") }
+
+    // Cargar los datos del usuario autenticado desde Firebase
+    LaunchedEffect(Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser // Usuario actual
+        currentUser?.let {
+            userName = it.displayName ?: "Nombre no disponible" // Si no hay nombre, mostrar mensaje predeterminado
+            userEmail = it.email ?: "Correo no disponible" // Si no hay correo, mostrar mensaje predeterminado
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -37,7 +47,7 @@ fun PantallaPerfil(navHostController: NavHostController) {
                 .align(Alignment.CenterHorizontally)
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_profile_placeholder),
+                painter = painterResource(R.drawable.ic_profile_placeholder), // Reemplazar con la imagen del perfil
                 contentDescription = "Imagen de perfil",
                 modifier = Modifier
                     .size(100.dp)
@@ -48,7 +58,7 @@ fun PantallaPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nombre y correo
+        // Mostrar nombre y correo del usuario
         Text(
             text = userName,
             fontSize = 20.sp,
@@ -63,27 +73,27 @@ fun PantallaPerfil(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Opciones de perfil
+        // Opciones disponibles (Edit Profile y Logout)
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.Start
         ) {
-            // Opción Edit Profile
             OpcionDePerfil(
                 icono = R.drawable.ic_edit,
                 texto = "Edit Profile",
                 onClick = { navHostController.navigate("pantallaEditarPerfil") }
             )
 
-            // Opción Logout
             OpcionDePerfil(
                 icono = R.drawable.ic_logout,
                 texto = "Logout",
-                onClick = { /* Aquí puedes manejar el cierre de sesión */ }
+                onClick = { /* Lógica para cerrar sesión */ }
             )
         }
     }
 }
+
+
 
 @Composable
 fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
