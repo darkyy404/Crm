@@ -1,14 +1,17 @@
 package com.example.proyectocrm.scenes
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -27,73 +30,99 @@ fun PantallaPerfil(navHostController: NavHostController) {
 
     // Cargar los datos del usuario autenticado desde Firebase
     LaunchedEffect(Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser // Usuario actual
+        val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
-            userName = it.displayName ?: "Nombre no disponible" // Si no hay nombre, mostrar mensaje predeterminado
-            userEmail = it.email ?: "Correo no disponible" // Si no hay correo, mostrar mensaje predeterminado
+            userName = it.displayName ?: "Nombre no disponible"
+            userEmail = it.email ?: "Correo no disponible"
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Brush.verticalGradient(colors = listOf(Color(0xFFEDF1F3), Color(0xFFFFFFFF))))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Imagen del perfil
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(120.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_profile_placeholder), // Reemplazar con la imagen del perfil
+                painter = painterResource(R.drawable.ic_profile_placeholder),
                 contentDescription = "Imagen de perfil",
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(120.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop
+            )
+            Icon(
+                painter = painterResource(R.drawable.ic_edit),
+                contentDescription = "Editar imagen",
+                tint = Color.White,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF007AFF))
+                    .padding(4.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mostrar nombre y correo del usuario
+        // Nombre y correo del usuario
         Text(
             text = userName,
-            fontSize = 20.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color(0xFF1F1F1F)
         )
         Text(
             text = userEmail,
             fontSize = 14.sp,
-            color = Color.Gray
+            color = Color(0xFF5A5A5A)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Opciones disponibles (Edit Profile y Logout)
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Start
+        // Opciones de perfil
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.elevatedCardElevation(4.dp)
         ) {
-            OpcionDePerfil(
-                icono = R.drawable.ic_edit,
-                texto = "Edit Profile",
-                onClick = { navHostController.navigate("pantallaEditarPerfil") }
-            )
-
-            OpcionDePerfil(
-                icono = R.drawable.ic_logout,
-                texto = "Logout",
-                onClick = { /* Lógica para cerrar sesión */ }
-            )
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                OpcionDePerfil(
+                    icono = R.drawable.ic_edit,
+                    texto = "Edit Profile",
+                    onClick = { navHostController.navigate("pantallaEditarPerfil") }
+                )
+                Divider(color = Color(0xFFEDF1F3), thickness = 1.dp)
+                OpcionDePerfil(
+                    icono = R.drawable.ic_logout,
+                    texto = "Logout",
+                    onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        navHostController.navigate("pantallaLogin") {
+                            popUpTo("pantallaPerfil") { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }
-
-
 
 @Composable
 fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
@@ -101,7 +130,7 @@ fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 8.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -114,7 +143,8 @@ fun OpcionDePerfil(icono: Int, texto: String, onClick: () -> Unit) {
         Text(
             text = texto,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF1F1F1F)
         )
     }
 }
