@@ -101,9 +101,9 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                     name.value = TextFieldValue(document.getString("name") ?: "") // Nombre
                     email.value = TextFieldValue(document.getString("email") ?: "") // Email
                     phone.value = TextFieldValue(document.getString("phone") ?: "") // Teléfono
-                    document.getString("profileImageUri")?.let { uri ->
-                        profileImageUri = Uri.parse(uri) // URI de la imagen de perfil
-                    }
+                    // Carga la URL de la imagen desde Firestore
+                    val imageUrl = document.getString("profileImageUri")
+                    profileImageUri = imageUrl?.let { Uri.parse(it) }
                 }
                 .addOnFailureListener {
                     // Maneja errores al cargar datos
@@ -155,11 +155,25 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                         }
 
                         profileImageUri?.let { uri ->
-                            subirImagenAFirebase(storage, uri) { successMessage, errorMessage ->
-                                dialogState = if (successMessage != null) {
-                                    Pair(true, successMessage)
+                            subirImagenAFirebase(storage, uri) { imageUrl, errorMessage ->
+                                if (imageUrl != null) {
+                                    // Llama a guardarDatosEnFirestore con la URL de la imagen
+                                    guardarDatosEnFirestore(
+                                        currentUser?.uid,
+                                        name.value.text,
+                                        email.value.text,
+                                        password.value.text,
+                                        phone.value.text,
+                                        Uri.parse(imageUrl) // Pasa la URL de la imagen
+                                    ) { success ->
+                                        dialogState = if (success) {
+                                            Pair(true, "Datos actualizados correctamente")
+                                        } else {
+                                            Pair(false, "Error al actualizar los datos")
+                                        }
+                                    }
                                 } else {
-                                    Pair(false, errorMessage ?: "Error desconocido al subir imagen")
+                                    dialogState = Pair(false, errorMessage ?: "Error desconocido al subir imagen")
                                 }
                             }
                         }
