@@ -67,7 +67,7 @@ fun PantallaHome(navHostController: NavHostController) {
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.weight(1f)
             )
-            IconButton(onClick = { navHostController.navigate("pantallaEditarPerfil") }) {
+            IconButton(onClick = { navHostController.navigate("pantallaPerfil") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_profile_placeholder),
                     contentDescription = "Perfil",
