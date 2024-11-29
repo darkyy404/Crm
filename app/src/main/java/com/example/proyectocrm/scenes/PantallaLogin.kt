@@ -115,7 +115,7 @@ fun PantallaLogin(navHostController: NavHostController) {
         OutlinedTextField(
             value = email.value,
             onValueChange = { email.value = it },
-            label = { Text("Email") },
+            label = { Text("Email", color = Color.Gray) },
             placeholder = { Text("yourname@gmail.com", color = Color.Gray) },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -135,7 +135,7 @@ fun PantallaLogin(navHostController: NavHostController) {
         OutlinedTextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Contraseña") },
+            label = { Text("Contraseña", color = Color.Gray) },
             placeholder = { Text("******", color = Color.Gray) },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier
@@ -159,8 +159,9 @@ fun PantallaLogin(navHostController: NavHostController) {
             Checkbox(
                 checked = rememberMe.value,
                 onCheckedChange = { rememberMe.value = it },
-                colors = CheckboxDefaults.colors(checkmarkColor = Color(0xFF007AFF))
+                colors = CheckboxDefaults.colors(Color.Gray)
             )
+
             Text(text = "Recuérdame", color = Color.Gray)
             Spacer(modifier = Modifier.weight(1f))
             Text(
