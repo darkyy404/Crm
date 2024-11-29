@@ -16,7 +16,15 @@
         android:theme="@style/Theme.ProyectoCrm"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
-
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <!-- Declarar MainActivity como lanzador -->
         <activity
             android:name=".MainActivity"

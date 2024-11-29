@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,12 +39,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,10 +77,26 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview(),
         onResult = { bitmap ->
-            // Convertir Bitmap a URI si es necesario
-            profileImageUri = Uri.parse("path/to/generated/bitmap") // Implementa la lógica de guardado si es necesario
+            if (bitmap != null) {
+                // Convertir el Bitmap a un Uri temporal usando FileProvider
+                val cacheDir = context.cacheDir // Obtén el directorio de caché del contexto
+                val file = File(cacheDir, "profile_image_${System.currentTimeMillis()}.jpg")
+                file.outputStream().use {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                }
+                profileImageUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    file
+                )
+            } else {
+                // Mostrar un mensaje de error si la captura falla
+                dialogState = Pair(false, "No se pudo capturar la imagen.")
+            }
         }
     )
+
+
 
     LaunchedEffect(Unit) {
         currentUser?.let { user ->
