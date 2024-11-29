@@ -9,6 +9,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lint.kotlin.metadata.Visibility
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
 import com.google.firebase.auth.FirebaseAuth
@@ -37,10 +40,10 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
     // Estados para los datos del usuario
     val name = remember { mutableStateOf(TextFieldValue("")) }
     val email = remember { mutableStateOf(TextFieldValue("")) }
-    val username = remember { mutableStateOf(TextFieldValue("")) }
     val password = remember { mutableStateOf(TextFieldValue("")) }
     val phone = remember { mutableStateOf(TextFieldValue("")) }
-    val message = remember { mutableStateOf("") }
+    val showPassword = remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf<Pair<Boolean, Boolean>?>(null) }
 
     // Efecto para cargar datos de Firestore
     LaunchedEffect(Unit) {
@@ -49,11 +52,7 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 .addOnSuccessListener { document ->
                     name.value = TextFieldValue(document.getString("name") ?: "")
                     email.value = TextFieldValue(document.getString("email") ?: "")
-                    username.value = TextFieldValue(document.getString("username") ?: "")
                     phone.value = TextFieldValue(document.getString("phone") ?: "")
-                }
-                .addOnFailureListener {
-                    message.value = "Error al cargar datos: ${it.message}"
                 }
         }
     }
@@ -90,10 +89,11 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                             currentUser?.uid,
                             name.value.text,
                             email.value.text,
-                            username.value.text,
-                            phone.value.text,
-                            message
-                        )
+                            password.value.text,
+                            phone.value.text
+                        ) { success ->
+                            showDialog = Pair(success, success)
+                        }
                     }
                     .size(24.dp),
                 tint = Color(0xFF007AFF)
@@ -133,24 +133,36 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
         // Campos editables
         EditProfileField("Nombre", name.value, onValueChange = { name.value = it })
         EditProfileField("Correo electrónico", email.value, onValueChange = { email.value = it }, keyboardType = KeyboardType.Email)
-        EditProfileField("Nombre de usuario", username.value, onValueChange = { username.value = it })
         EditProfileField(
             "Contraseña",
             password.value,
             onValueChange = { password.value = it },
             keyboardType = KeyboardType.Password,
-            isPassword = true
+            isPassword = true,
+            showPassword = showPassword
         )
         EditProfileField("Número telefónico", phone.value, onValueChange = { phone.value = it }, keyboardType = KeyboardType.Phone)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mensaje de estado
-        if (message.value.isNotEmpty()) {
-            Text(
-                text = message.value,
-                color = if (message.value.startsWith("Error")) Color.Red else Color.Green,
-                modifier = Modifier.padding(horizontal = 16.dp)
+        // Diálogo para el mensaje
+        showDialog?.let { (success, isPositive) ->
+            AlertDialog(
+                onDismissRequest = { showDialog = null },
+                title = { Text(if (success) "¡Éxito!" else "Error") },
+                text = { Text(if (success) "Datos actualizados correctamente" else "Hubo un problema al actualizar los datos.") },
+                confirmButton = {
+                    TextButton(onClick = { showDialog = null }) {
+                        Text("OK")
+                    }
+                },
+                icon = {
+                    Icon(
+                        painterResource(if (isPositive) R.drawable.ic_success else R.drawable.ic_error),
+                        contentDescription = null,
+                        tint = if (isPositive) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    )
+                }
             )
         }
     }
@@ -163,14 +175,14 @@ fun EditProfileField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    showPassword: MutableState<Boolean> = mutableStateOf(false)
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        // Etiqueta del campo
         Text(
             text = label,
             fontSize = 14.sp,
@@ -178,13 +190,22 @@ fun EditProfileField(
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        // Campo de entrada
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             placeholder = { Text(label, color = Color.Gray) },
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (isPassword && !showPassword.value) PasswordVisualTransformation() else VisualTransformation.None,
+            trailingIcon = if (isPassword) {
+                {
+                    Icon(
+                        imageVector = if (showPassword.value) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Mostrar contraseña",
+                        modifier = Modifier.clickable { showPassword.value = !showPassword.value }
+                    )
+                }
+            } else null
+            ,
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 containerColor = Color.White,
                 unfocusedBorderColor = Color.Transparent,
@@ -202,12 +223,12 @@ fun guardarDatosEnFirestore(
     userId: String?,
     name: String,
     email: String,
-    username: String,
+    password: String,
     phone: String,
-    message: MutableState<String>
+    onResult: (Boolean) -> Unit
 ) {
     if (userId == null) {
-        message.value = "Error: Usuario no autenticado"
+        onResult(false)
         return
     }
 
@@ -215,15 +236,11 @@ fun guardarDatosEnFirestore(
     val userData = mapOf(
         "name" to name,
         "email" to email,
-        "username" to username,
+        "password" to password,
         "phone" to phone
     )
 
     db.collection("users").document(userId).update(userData)
-        .addOnSuccessListener {
-            message.value = "Datos actualizados exitosamente"
-        }
-        .addOnFailureListener { e ->
-            message.value = "Error al actualizar datos: ${e.message}"
-        }
+        .addOnSuccessListener { onResult(true) }
+        .addOnFailureListener { onResult(false) }
 }

@@ -80,6 +80,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.0.0")
     implementation("io.coil-kt:coil-svg:2.0.0")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.animation.core.lint)
+    implementation ("androidx.compose.material:material-icons-extended:<latest_version>")
+
 
 
     // Test
