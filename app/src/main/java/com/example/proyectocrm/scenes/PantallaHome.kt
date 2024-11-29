@@ -1,21 +1,27 @@
 package com.example.proyectocrm.scenes
 
 import LineChartComponent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
 import com.example.proyectocrm.components.ChartRepository
 import com.example.proyectocrm.components.OrderList
 import com.github.mikephil.charting.data.Entry
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,6 +34,8 @@ fun PantallaHome(navHostController: NavHostController) {
     var leadsData by remember { mutableStateOf<List<Entry>>(emptyList()) }
     var salesData by remember { mutableStateOf<List<Entry>>(emptyList()) }
     var ordersData by remember { mutableStateOf<List<Entry>>(emptyList()) }
+    var profileImageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen de perfil
+
 
     // Esto asegura que cualquier tarea asíncrona que se lance aquí se cancelará automáticamente
     // si el Composable deja de estar activo (por ejemplo, si el usuario cambia de pantalla).
@@ -47,6 +55,13 @@ fun PantallaHome(navHostController: NavHostController) {
                 println("Leads Data: $leadsData")
             println("Sales Data: $salesData")
             println("Orders Data: $ordersData")
+        }
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let {
+            // Lógica para cargar la URL de la imagen desde Firestore
+            obtenerImagenDePerfil(it.uid) { url ->
+                profileImageUrl = url
+            }
         }
     }
     Column(
@@ -68,12 +83,28 @@ fun PantallaHome(navHostController: NavHostController) {
                 modifier = Modifier.weight(1f)
             )
             IconButton(onClick = { navHostController.navigate("pantallaPerfil") }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_profile_placeholder),
-                    contentDescription = "Perfil",
-                    tint = Color(0xFF007AFF),
-                    modifier = Modifier.size(32.dp)
-                )
+                if (profileImageUrl != null) {
+                    // Si se cargó una URL de Firebase, mostrar la imagen usando Coil
+                    // (una biblioteca que se utiliza para manejar imagenes dianmicas en Compose)
+                    Image(
+                        painter = rememberImagePainter(profileImageUrl),
+                        contentDescription = "Imagen de perfil",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Mostrar un placeholder mientras la URL de la imagen se carga
+                    Image(
+                        painter = painterResource(R.drawable.ic_profile_placeholder),
+                        contentDescription = "Imagen de perfil",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
 
