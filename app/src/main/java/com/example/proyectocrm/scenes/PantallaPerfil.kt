@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,22 +30,28 @@ fun PantallaPerfil(navHostController: NavHostController) {
     // Estados para almacenar los datos del usuario autenticado
     var userName by remember { mutableStateOf("Nombre del Usuario") }
     var userEmail by remember { mutableStateOf("usuario@email.com") }
-    var profileImageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen de perfil
+    var profileImageUri by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
 
     // Cargar los datos del usuario autenticado desde Firebase
     LaunchedEffect(Unit) {
         val currentUser = FirebaseAuth.getInstance().currentUser
-        currentUser?.let {
-            userName = it.displayName ?: "Nombre no disponible"
-            userEmail = it.email ?: "Correo no disponible"
-
-            // Lógica para cargar la URL de la imagen desde Firestore
-            obtenerImagenDePerfil(it.uid) { url ->
-                profileImageUrl = url
-            }
+        if (currentUser != null) {
+            FirebaseFirestore.getInstance().collection("users").document(currentUser.uid).get()
+                .addOnSuccessListener { document ->
+                    userName = document.getString("name") ?: "Nombre no disponible"
+                    userEmail = document.getString("email") ?: "Correo no disponible"
+                    profileImageUri = document.getString("profileImageUri")
+                }
+                .addOnFailureListener { e ->
+                    errorMessage = "Error al cargar el perfil: ${e.message}"
+                }
+        } else {
+            errorMessage = "Usuario no autenticado"
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -60,10 +67,9 @@ fun PantallaPerfil(navHostController: NavHostController) {
                 .size(120.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            if (profileImageUrl != null) {
-                // Si se cargó una URL de Firebase, mostrar la imagen usando Coil
+            if (profileImageUri != null) {
                 Image(
-                    painter = rememberImagePainter(profileImageUrl),
+                    painter = rememberImagePainter(profileImageUri),
                     contentDescription = "Imagen de perfil",
                     modifier = Modifier
                         .size(120.dp)
@@ -71,10 +77,9 @@ fun PantallaPerfil(navHostController: NavHostController) {
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Mostrar un placeholder mientras la URL de la imagen se carga
                 Image(
                     painter = painterResource(R.drawable.ic_profile_placeholder),
-                    contentDescription = "Imagen de perfil",
+                    contentDescription = "Imagen predeterminada",
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape),
@@ -82,6 +87,7 @@ fun PantallaPerfil(navHostController: NavHostController) {
                 )
             }
         }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -123,12 +129,23 @@ fun PantallaPerfil(navHostController: NavHostController) {
                     icono = R.drawable.ic_logout,
                     texto = "Logout",
                     onClick = {
-                        FirebaseAuth.getInstance().signOut()
-                        navHostController.navigate("pantallaLogin") {
-                            popUpTo("pantallaPerfil") { inclusive = true }
+                        // Obtener el cliente de Google Sign-In
+                        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+                            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+                        ).build()
+                        val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso)
+
+                        // Cerrar sesión de Google
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            // Cerrar sesión de Firebase después de cerrar la sesión de Google
+                            FirebaseAuth.getInstance().signOut()
+                            navHostController.navigate("pantallaLogin") {
+                                popUpTo("pantallaPerfil") { inclusive = true }
+                            }
                         }
                     }
                 )
+
             }
         }
     }
