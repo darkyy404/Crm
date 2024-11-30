@@ -84,6 +84,8 @@ dependencies {
     implementation(libs.androidx.animation.core.lint)
     implementation ("androidx.compose.material:material-icons-extended:<latest_version>")
     implementation(libs.firebase.storage.ktx)
+    implementation ("androidx.biometric:biometric:1.2.0")
+    implementation ("androidx.security:security-crypto:1.1.0-alpha03")
 
 
     // Test
