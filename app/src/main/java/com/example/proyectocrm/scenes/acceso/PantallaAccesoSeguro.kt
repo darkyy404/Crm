@@ -36,7 +36,7 @@ fun PantallaAccesoSeguro(navHostController: NavHostController) {
                     // Llamado cuando la autenticación es exitosa
                     override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                         // Redirige al usuario a la pantalla principal de la aplicación
-                        navHostController.navigate("PantallaPrincipal")
+                        navHostController.navigate("PantallaHome")
                     }
 
                     // Llamado cuando ocurre un error en la autenticación
@@ -101,7 +101,7 @@ fun PantallaAccesoSeguro(navHostController: NavHostController) {
                 Button(onClick = {
                     val savedPin = leerPreferencia(context, "user_pin")
                     if (pinInput == savedPin) {
-                        navHostController.navigate("PantallaPrincipal")
+                        navHostController.navigate("PantallaHome")
                     } else {
                         failedAttempts += 1
                         errorMessage = "PIN incorrecto"
