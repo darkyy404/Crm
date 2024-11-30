@@ -29,7 +29,7 @@ fun NavigationWrapper(navHostController: NavHostController) {
         composable("pantallaEditarPerfil") { PantallaEditarPerfil(navHostController) }
 
         // Pantallas de acceso seguro
-        composable("pantallaConfiguracionAccesoSeguro") { PantallaConfiguracionAcceso(navHostController) }
+        composable("pantallaConfiguracionAcceso") { PantallaConfiguracionAcceso(navHostController) }
         composable("pantallaAccesoSeguro") { PantallaAccesoSeguro(navHostController) }
         composable("pantallaAccesoFallido") { PantallaAccesoFallido(navHostController) }
         composable("pantallaCambiarMetodoAcceso") { PantallaCambiarMetodoAcceso(navHostController) }
