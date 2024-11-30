@@ -127,8 +127,8 @@ fun PantallaPerfil(navHostController: NavHostController) {
                 Divider(color = Color(0xFFEDF1F3), thickness = 1.dp)
                 OpcionDePerfil(
                     icono = R.drawable.ic_security,
-                    texto = "Configurar Acceso Seguro",
-                    onClick = { navHostController.navigate("pantallaConfiguracionAcceso") }
+                    texto = "Cambiar método de acceso",
+                    onClick = { navHostController.navigate("pantallaCambiarMetodoAcceso") }
                 )
                 OpcionDePerfil(
                     icono = R.drawable.ic_logout,
