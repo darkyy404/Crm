@@ -57,7 +57,7 @@ fun PantallaConfiguracionAcceso(navHostController: NavHostController) {
             if (selectedOption == "pin") {
                 navHostController.navigate("pantallaConfigurarPin") // Navega a la pantalla para configurar el PIN
             } else {
-                navHostController.navigate("pantallaPrincipal")
+                navHostController.navigate("pantallaHome")
             }
         }) {
             Text("Guardar")
