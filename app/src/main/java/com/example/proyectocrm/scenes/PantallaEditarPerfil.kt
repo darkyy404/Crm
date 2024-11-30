@@ -139,32 +139,16 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                 contentDescription = "Guardar",
                 modifier = Modifier
                     .clickable {
-                        guardarDatosEnFirestore(
-                            currentUser?.uid,
-                            name.value.text,
-                            email.value.text,
-                            password.value.text,
-                            phone.value.text,
-                            profileImageUri
-                        ) { success ->
-                            dialogState = if (success) {
-                                Pair(true, "Datos actualizados correctamente")
-                            } else {
-                                Pair(false, "Error al actualizar los datos")
-                            }
-                        }
-
                         profileImageUri?.let { uri ->
                             subirImagenAFirebase(storage, uri) { imageUrl, errorMessage ->
                                 if (imageUrl != null) {
-                                    // Llama a guardarDatosEnFirestore con la URL de la imagen
                                     guardarDatosEnFirestore(
                                         currentUser?.uid,
                                         name.value.text,
                                         email.value.text,
                                         password.value.text,
                                         phone.value.text,
-                                        Uri.parse(imageUrl) // Pasa la URL de la imagen
+                                        Uri.parse(imageUrl)
                                     ) { success ->
                                         dialogState = if (success) {
                                             Pair(true, "Datos actualizados correctamente")
@@ -176,11 +160,27 @@ fun PantallaEditarPerfil(navHostController: NavHostController) {
                                     dialogState = Pair(false, errorMessage ?: "Error desconocido al subir imagen")
                                 }
                             }
+                        } ?: run {
+                            guardarDatosEnFirestore(
+                                currentUser?.uid,
+                                name.value.text,
+                                email.value.text,
+                                password.value.text,
+                                phone.value.text,
+                                null
+                            ) { success ->
+                                dialogState = if (success) {
+                                    Pair(true, "Datos actualizados correctamente")
+                                } else {
+                                    Pair(false, "Error al actualizar los datos")
+                                }
+                            }
                         }
                     }
                     .size(24.dp),
                 tint = Color(0xFF007AFF)
             )
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -295,8 +295,8 @@ fun guardarDatosEnFirestore(
         "phone" to phone
     )
 
-    profileImageUri?.let {
-        userData["profileImageUri"] = it.toString()
+    profileImageUri?.let { uri ->
+        userData["profileImageUri"] = uri.toString()
     }
 
     db.collection("users").document(userId).set(userData)
@@ -309,9 +309,18 @@ fun subirImagenAFirebase(storage: FirebaseStorage, uri: Uri, onResult: (String?,
     val storageRef = storage.reference.child("profile_images/${UUID.randomUUID()}.jpg")
 
     storageRef.putFile(uri)
-        .addOnSuccessListener { onResult("Imagen subida exitosamente", null) }
-        .addOnFailureListener { e -> onResult(null, e.message) }
+        .addOnSuccessListener { taskSnapshot ->
+            storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                onResult(downloadUri.toString(), null) // Devuelve la URL de descarga
+            }.addOnFailureListener { e ->
+                onResult(null, e.message)
+            }
+        }
+        .addOnFailureListener { e ->
+            onResult(null, e.message)
+        }
 }
+
 
 // Verificar y solicitar permisos
 fun checkAndRequestCameraPermission(context: Context, onPermissionGranted: () -> Unit) {
