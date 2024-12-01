@@ -1,6 +1,7 @@
-
 package com.example.proyectocrm.scenes
+
 import android.app.Activity
+import android.content.Context
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +28,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +60,6 @@ fun PantallaLogin(navHostController: NavHostController) {
                     auth.signInWithCredential(credential).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             message.value = "Inicio de sesión con Google exitoso"
-                            navHostController.navigate("PantallaHome")
                         } else {
                             message.value = "Error: ${task.exception?.message}"
                         }
@@ -246,8 +248,6 @@ fun PantallaLogin(navHostController: NavHostController) {
     }
 }
 
-
-
 fun loginUser(
     auth: FirebaseAuth,
     email: String,
@@ -267,4 +267,23 @@ fun loginUser(
     } else {
         message.value = "Por favor completa todos los campos"
     }
+}
+
+
+
+// Leer datos de configuración desde almacenamiento cifrado
+fun leerPreferencia(context: Context, key: String): String? {
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    val sharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        "user_preferences",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    return sharedPreferences.getString(key, null)
 }
