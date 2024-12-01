@@ -12,8 +12,8 @@ import com.example.proyectocrm.scenes.PantallaHome
 import com.example.proyectocrm.scenes.PantallaPerfil
 import com.example.proyectocrm.scenes.acceso.PantallaAccesoSeguro
 import com.example.proyectocrm.scenes.acceso.PantallaAccesoFallido
-import com.example.proyectocrm.scenes.acceso.PantallaCambiarMetodoAcceso
 import com.example.proyectocrm.scenes.acceso.PantallaConfiguracionAcceso
+import com.example.proyectocrm.scenes.acceso.PantallaConfigurarPin
 
 @Composable
 fun NavigationWrapper(navHostController: NavHostController) {
@@ -32,6 +32,9 @@ fun NavigationWrapper(navHostController: NavHostController) {
         composable("pantallaConfiguracionAcceso") { PantallaConfiguracionAcceso(navHostController) }
         composable("pantallaAccesoSeguro") { PantallaAccesoSeguro(navHostController) }
         composable("pantallaAccesoFallido") { PantallaAccesoFallido(navHostController) }
-        composable("pantallaCambiarMetodoAcceso") { PantallaCambiarMetodoAcceso(navHostController) }
+
+        // Pantalla de configuración de PIN
+        composable("pantallaConfigurarPin") { PantallaConfigurarPin(navHostController) }
+
     }
 }
