@@ -59,19 +59,24 @@ fun PantallaLogin(navHostController: NavHostController) {
                     val credential = GoogleAuthProvider.getCredential(it.idToken, null)
                     auth.signInWithCredential(credential).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            // Inicio de sesión exitoso con Google
                             message.value = "Inicio de sesión con Google exitoso"
+                            handlePostLogin(navHostController, context) // Redirige después del login
                         } else {
+                            // Error en el inicio de sesión con Google
                             message.value = "Error: ${task.exception?.message}"
                         }
                     }
                 }
             } catch (e: ApiException) {
+                // Maneja errores específicos de Google Sign-In
                 message.value = "Error en Google Sign-In: ${e.message}"
                 Log.e("GoogleSignIn", "Error", e)
             }
         }
     }
 
+    // UI de la pantalla de inicio de sesión
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -178,7 +183,7 @@ fun PantallaLogin(navHostController: NavHostController) {
         // Botón de iniciar sesión
         Button(
             onClick = {
-                loginUser(auth, email.value, password.value, navHostController, message)
+                loginUser(auth, email.value, password.value, navHostController, message,context)
             },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -248,18 +253,30 @@ fun PantallaLogin(navHostController: NavHostController) {
     }
 }
 
+// Función para gestionar el flujo después del inicio de sesión exitoso
+fun handlePostLogin(navHostController: NavHostController, context: Context) {
+    val authMethod = leerPreferencia(context, "auth_method")
+    if (authMethod.isNullOrEmpty()) {
+        navHostController.navigate("pantallaConfigurarPin") // Si no está configurado, navega para configurar el PIN
+    } else {
+        navHostController.navigate("pantallaAccesoSeguro") // Si ya está configurado, navega a la pantalla de acceso seguro
+    }
+}
+
+// Función para iniciar sesión con email y contraseña
 fun loginUser(
     auth: FirebaseAuth,
     email: String,
     password: String,
     navHostController: NavHostController,
-    message: MutableState<String>
+    message: MutableState<String>,
+    context: Context
 ) {
     if (email.isNotBlank() && password.isNotBlank()) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 message.value = "Inicio de sesión exitoso"
-                navHostController.navigate("PantallaHome")
+                handlePostLogin(navHostController, context)
             } else {
                 message.value = "Error: ${task.exception?.message}"
             }
@@ -268,8 +285,6 @@ fun loginUser(
         message.value = "Por favor completa todos los campos"
     }
 }
-
-
 
 // Leer datos de configuración desde almacenamiento cifrado
 fun leerPreferencia(context: Context, key: String): String? {
@@ -287,3 +302,4 @@ fun leerPreferencia(context: Context, key: String): String? {
 
     return sharedPreferences.getString(key, null)
 }
+
