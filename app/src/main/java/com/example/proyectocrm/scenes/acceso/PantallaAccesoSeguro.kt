@@ -1,12 +1,18 @@
 package com.example.proyectocrm.scenes.acceso
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -16,51 +22,120 @@ import androidx.security.crypto.MasterKey
 @Composable
 fun PantallaAccesoSeguro(navHostController: NavHostController) {
     val context = LocalContext.current
+    val savedPin = leerPreferencia(context, "user_pin") // Leer PIN almacenado
     var pinInput by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var failedAttempts by remember { mutableStateOf(0) } // Contador de intentos fallidos
-    val maxAttempts = 5 // Límite máximo de intentos fallidos
 
-    // Interfaz para autenticación por PIN
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFFEDF1F3), Color(0xFFFFFFFF)) // Ajustar colores
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Introduce tu PIN para acceder", fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(40.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = pinInput,
-            onValueChange = { pinInput = it },
-            label = { Text("PIN") },
-            modifier = Modifier.fillMaxWidth()
+        // Título
+        Text(
+            text = "Ingresa tu PIN",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = Color(0xFF1F1F1F)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
+        // Campos para mostrar el PIN ingresado
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            repeat(4) { index ->
+                val char = if (index < pinInput.length) pinInput[index].toString() else ""
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .padding(4.dp)
+                        .background(Color(0xFFEDF1F3), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = char,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF007AFF) // Color principal de la app
+                    )
+                }
+            }
         }
 
-        Button(
-            onClick = {
-                val savedPin = leerPreferencia(context, "user_pin")
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Teclado numérico
+        TecladoNumerico(onNumberClick = { number ->
+            if (pinInput.length < 4) {
+                pinInput += number
+            }
+            if (pinInput.length == 4) {
                 if (pinInput == savedPin) {
-                    navHostController.navigate("PantallaHome") // Navega a la pantalla principal si el PIN es correcto
+                    navHostController.navigate("pantallaHome")
                 } else {
-                    failedAttempts += 1
                     errorMessage = "PIN incorrecto"
-                    if (failedAttempts >= maxAttempts) {
-                        navHostController.navigate("PantallaAccesoFallido") // Navega a la pantalla de intentos fallidos
+                    pinInput = "" // Reiniciar PIN ingresado
+                }
+            }
+        }, onDeleteClick = {
+            if (pinInput.isNotEmpty()) {
+                pinInput = pinInput.dropLast(1)
+            }
+        })
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mensaje de error
+        errorMessage?.let {
+            Text(text = it, color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+// Componente del teclado numérico
+@Composable
+fun TecladoNumerico(onNumberClick: (String) -> Unit, onDeleteClick: () -> Unit) {
+    val numbers = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        for (row in numbers.chunked(3)) {
+            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+                row.forEach { number ->
+                    Button(
+                        onClick = { onNumberClick(number) },
+                        modifier = Modifier
+                            .size(64.dp)
+                            .padding(4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    ) {
+                        Text(text = number, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-            },
-            modifier = Modifier.padding(vertical = 16.dp)
-        ) {
-            Text("Acceder")
+            }
+        }
+        // Botón para borrar
+        Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = onDeleteClick,
+                modifier = Modifier
+                    .size(64.dp)
+                    .padding(4.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+            ) {
+                Text(text = "⌫", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
