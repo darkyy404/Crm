@@ -8,17 +8,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TecladoNumerico(onNumberClick: (String) -> Unit, onDeleteClick: () -> Unit) {
+fun TecladoNumerico(
+    onNumberClick: (String) -> Unit,
+    onDeleteClick: () -> Unit,
+    buttonSize: Dp = 64.dp, // Tamaño configurable de los botones
+    numberColor: Color = Color(0xFF1F1F1F), // Color de los números
+    deleteButtonColor: Color = MaterialTheme.colorScheme.error, // Color del botón de borrar
+    containerColor: Color = Color(0xFFF5F5F5) // Color de fondo del botón
+) {
     val numbers = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫")
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         numbers.chunked(3).forEach { row ->
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
             ) {
                 row.forEach { number ->
                     if (number.isNotEmpty()) {
@@ -31,23 +41,22 @@ fun TecladoNumerico(onNumberClick: (String) -> Unit, onDeleteClick: () -> Unit) 
                                 }
                             },
                             modifier = Modifier
-                                .size(64.dp)
+                                .size(buttonSize)
                                 .padding(4.dp),
                             shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF5F5F5),
-                                contentColor = Color(0xFF1F1F1F)
+                                containerColor = containerColor,
+                                contentColor = if (number == "⌫") deleteButtonColor else numberColor
                             )
                         ) {
                             Text(
                                 text = number,
                                 fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (number == "⌫") MaterialTheme.colorScheme.error else Color(0xFF1F1F1F)
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     } else {
-                        Spacer(modifier = Modifier.size(64.dp)) // Espacio vacío
+                        Spacer(modifier = Modifier.size(buttonSize)) // Espacio vacío para mantener la alineación
                     }
                 }
             }
