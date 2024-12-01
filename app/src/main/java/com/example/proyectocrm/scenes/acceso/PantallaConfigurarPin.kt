@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.components.guardarPreferencia
+import com.example.proyectocrm.components.TecladoNumerico
 
 @Composable
 fun PantallaConfigurarPin(navHostController: NavHostController) {
@@ -29,93 +31,96 @@ fun PantallaConfigurarPin(navHostController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF007AFF), // Azul arriba
+                        Color.White // Blanco abajo
+                    )
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Espaciado superior
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Título
         Text(
             text = if (isConfirming) "Confirma tu PIN" else "Introduce tu nuevo PIN",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 16.dp)
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         // Indicadores visuales del PIN
         Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(top = 60.dp)
         ) {
             repeat(4) { index ->
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
-                        .padding(4.dp)
+                        .width(40.dp)
+                        .height(6.dp)
                         .background(
-                            color = if (index < pin.length) MaterialTheme.colorScheme.primary
-                            else Color.LightGray,
-                            shape = CircleShape
+                            color = if (index < pin.length) Color.White else Color.LightGray,
+                            shape = RoundedCornerShape(50)
                         )
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        // Espaciado entre los indicadores y el teclado
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Teclado numérico
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
+        // Fondo blanco detrás del teclado
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .background(Color.White, shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
         ) {
-            for (row in listOf("123", "456", "789", "0")) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    for (digit in row) {
-                        Button(
-                            onClick = {
-                                if (pin.length < 4) {
-                                    pin += digit
-                                }
-                                if (pin.length == 4 && isConfirming) {
-                                    if (pin == confirmPin) {
-                                        guardarPreferencia(context, "user_pin", pin)
-                                        navHostController.navigate("pantallaAccesoSeguro")
-                                    } else {
-                                        errorMessage = "Los PIN ingresados no coinciden."
-                                        pin = ""
-                                        confirmPin = ""
-                                        isConfirming = false
-                                    }
-                                } else if (pin.length == 4 && !isConfirming) {
-                                    confirmPin = pin
-                                    pin = ""
-                                    isConfirming = true
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(1f),
-                            shape = RoundedCornerShape(50),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(
-                                text = digit.toString(), // Convertimos el carácter a String
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp, top = 120.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Teclado numérico reutilizado
+                TecladoNumerico(
+                    onNumberClick = { number ->
+                        if (pin.length < 4) {
+                            pin += number
                         }
-                    }
-
-                }
+                        if (pin.length == 4 && isConfirming) {
+                            if (pin == confirmPin) {
+                                guardarPreferencia(context, "user_pin", pin)
+                                navHostController.navigate("pantallaPerfil")
+                            } else {
+                                errorMessage = "Los PIN ingresados no coinciden."
+                                pin = ""
+                                confirmPin = ""
+                                isConfirming = false
+                            }
+                        } else if (pin.length == 4 && !isConfirming) {
+                            confirmPin = pin
+                            pin = ""
+                            isConfirming = true
+                        }
+                    },
+                    onDeleteClick = {
+                        if (pin.isNotEmpty()) {
+                            pin = pin.dropLast(1)
+                        }
+                    },
+                    buttonSize = 78.dp, // Ajuste del tamaño de los botones
+                    numberColor = Color(0xFF1F1F1F), // Color de los números
+                    deleteButtonColor = MaterialTheme.colorScheme.error // Color del botón de borrar
+                )
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // Mensaje de error
         errorMessage?.let {
@@ -124,7 +129,7 @@ fun PantallaConfigurarPin(navHostController: NavHostController) {
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
             )
         }
     }
