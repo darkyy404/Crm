@@ -22,8 +22,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.proyectocrm.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.proyectocrm.components.guardarPreferencia
 
 @Composable
 fun PantallaPerfil(navHostController: NavHostController) {
@@ -135,15 +138,19 @@ fun PantallaPerfil(navHostController: NavHostController) {
                     texto = "Logout",
                     onClick = {
                         // Obtener el cliente de Google Sign-In
-                        val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
-                            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+                        val gso = GoogleSignInOptions.Builder(
+                            GoogleSignInOptions.DEFAULT_SIGN_IN
                         ).build()
-                        val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso)
+                        val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
                         // Cerrar sesión de Google
                         googleSignInClient.signOut().addOnCompleteListener {
                             // Cerrar sesión de Firebase después de cerrar la sesión de Google
                             FirebaseAuth.getInstance().signOut()
+
+                            // Eliminar el PIN almacenado
+                            guardarPreferencia(context, "user_pin", "")
+
                             navHostController.navigate("pantallaLogin") {
                                 popUpTo("pantallaPerfil") { inclusive = true }
                             }
