@@ -41,6 +41,14 @@ fun PantallaLogin(navHostController: NavHostController) {
     val password = remember { mutableStateOf("") }
     val rememberMe = remember { mutableStateOf(false) }
 
+    // Comprobar si ya hay un PIN configurado y redirigir automáticamente si aplica
+    LaunchedEffect(Unit) {
+        val savedPin = leerPreferencia(context, "user_pin")
+        if (!savedPin.isNullOrEmpty()) {
+            navHostController.navigate("pantallaAccesoSeguro")
+        }
+    }
+
     // Configuración de Google Sign-In
     val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken("314609855316-momoqbcv11cil4bu7ru88ktuqten9al2.apps.googleusercontent.com")
@@ -183,7 +191,7 @@ fun PantallaLogin(navHostController: NavHostController) {
         // Botón de iniciar sesión
         Button(
             onClick = {
-                loginUser(auth, email.value, password.value, navHostController, message,context)
+                loginUser(auth, email.value, password.value, navHostController, message, context)
             },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -302,4 +310,3 @@ fun leerPreferencia(context: Context, key: String): String? {
 
     return sharedPreferences.getString(key, null)
 }
-
