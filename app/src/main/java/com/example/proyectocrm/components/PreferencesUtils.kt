@@ -1,4 +1,4 @@
-package com.example.proyectocrm.utils
+package com.example.proyectocrm.components
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
