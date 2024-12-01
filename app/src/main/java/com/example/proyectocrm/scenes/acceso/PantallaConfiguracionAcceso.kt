@@ -15,7 +15,7 @@ import androidx.security.crypto.MasterKey
 @Composable
 fun PantallaConfiguracionAcceso(navHostController: NavHostController) {
     val context = LocalContext.current
-    var selectedOption by remember { mutableStateOf<String?>(null) }
+    var selectedOption by remember { mutableStateOf("pin") } // PIN seleccionado por defecto
 
     Column(
         modifier = Modifier
@@ -30,37 +30,24 @@ fun PantallaConfiguracionAcceso(navHostController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Selecciona tu método de acceso seguro:")
+        Text("Configura tu método de acceso seguro:")
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Opción para la huella dactilar
-        RadioButtonWithLabel(
-            label = "Usar mi huella dactilar",
-            isSelected = selectedOption == "fingerprint",
-            onClick = { selectedOption = "fingerprint" }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Opción para el PIN
+        // Opción fija para el PIN
         RadioButtonWithLabel(
             label = "Usar un PIN",
-            isSelected = selectedOption == "pin",
-            onClick = { selectedOption = "pin" }
+            isSelected = true, // Siempre seleccionado porque es el único método
+            onClick = {} // Sin acción, ya que es la única opción
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            guardarPreferencia(context, "auth_method", selectedOption ?: "")
-            if (selectedOption == "pin") {
-                navHostController.navigate("pantallaConfigurarPin") // Navega a la pantalla para configurar el PIN
-            } else {
-                navHostController.navigate("pantallaHome")
-            }
+            guardarPreferencia(context, "auth_method", selectedOption) // Guarda el método de acceso como "pin"
+            navHostController.navigate("pantallaConfigurarPin") // Navega para configurar el PIN
         }) {
-            Text("Guardar")
+            Text("Guardar y Configurar PIN")
         }
     }
 }
@@ -91,4 +78,3 @@ fun guardarPreferencia(context: Context, key: String, value: String) {
 
     sharedPreferences.edit().putString(key, value).apply()
 }
-
