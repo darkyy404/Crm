@@ -3,7 +3,7 @@ package com.example.proyectocrm.scenes.acceso
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.example.proyectocrm.components.TecladoNumerico
 
 @Composable
 fun PantallaAccesoSeguro(navHostController: NavHostController) {
@@ -31,127 +32,97 @@ fun PantallaAccesoSeguro(navHostController: NavHostController) {
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFFEDF1F3), Color(0xFFFFFFFF)) // Ajustar colores
+                    colors = listOf(
+                        Color(0xFF007AFF), // Azul arriba
+                        Color.White // Blanco abajo
+                    )
                 )
-            )
-            .padding(16.dp),
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Espaciado superior
         Spacer(modifier = Modifier.height(40.dp))
 
         // Título
         Text(
             text = "Ingresa tu PIN",
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            color = Color(0xFF1F1F1F)
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Campos para mostrar el PIN ingresado
+        // Indicadores visuales del PIN
         Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(top = 60.dp)
         ) {
             repeat(4) { index ->
-                val char = if (index < pinInput.length) "●" else ""
                 Box(
                     modifier = Modifier
-                        .size(50.dp)
-                        .padding(4.dp)
-                        .background(Color(0xFFEDF1F3), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = char,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF007AFF) // Color principal de la app
-                    )
-                }
+                        .width(40.dp)
+                        .height(6.dp)
+                        .background(
+                            color = if (index < pinInput.length) Color.White else Color.LightGray,
+                            shape = RoundedCornerShape(50)
+                        )
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        // Espaciado entre los indicadores y el teclado
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Teclado numérico
-        TecladoNumerico(
-            onNumberClick = { number ->
-                if (pinInput.length < 4) {
-                    pinInput += number
-                }
-                if (pinInput.length == 4) {
-                    if (pinInput == savedPin) {
-                        navHostController.navigate("pantallaHome")
-                    } else {
-                        errorMessage = "PIN incorrecto"
-                        pinInput = "" // Reiniciar PIN ingresado
-                    }
-                }
-            },
-            onDeleteClick = {
-                if (pinInput.isNotEmpty()) {
-                    pinInput = pinInput.dropLast(1)
-                }
+        // Fondo blanco detrás del teclado
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .background(Color.White, shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp, top = 120.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Teclado numérico reutilizado
+                TecladoNumerico(
+                    onNumberClick = { number ->
+                        if (pinInput.length < 4) {
+                            pinInput += number
+                        }
+                        if (pinInput.length == 4) {
+                            if (pinInput == savedPin) {
+                                navHostController.navigate("pantallaHome")
+                            } else {
+                                errorMessage = "PIN incorrecto"
+                                pinInput = "" // Reiniciar PIN ingresado
+                            }
+                        }
+                    },
+                    onDeleteClick = {
+                        if (pinInput.isNotEmpty()) {
+                            pinInput = pinInput.dropLast(1)
+                        }
+                    },
+                    buttonSize = 78.dp, // Ajuste del tamaño de los botones
+                    numberColor = Color(0xFF1F1F1F), // Color de los números
+                    deleteButtonColor = MaterialTheme.colorScheme.error // Color del botón de borrar
+                )
             }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+        }
 
         // Mensaje de error
         errorMessage?.let {
             Text(
                 text = it,
                 color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
             )
-        }
-    }
-}
-
-// Componente del teclado numérico
-@Composable
-fun TecladoNumerico(onNumberClick: (String) -> Unit, onDeleteClick: () -> Unit) {
-    val numbers = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫")
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        numbers.chunked(3).forEach { row ->
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-            ) {
-                row.forEach { number ->
-                    if (number.isNotEmpty()) {
-                        Button(
-                            onClick = {
-                                if (number == "⌫") {
-                                    onDeleteClick()
-                                } else {
-                                    onNumberClick(number)
-                                }
-                            },
-                            modifier = Modifier
-                                .size(64.dp)
-                                .padding(4.dp),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF5F5F5),
-                                contentColor = Color(0xFF1F1F1F)
-                            )
-                        ) {
-                            Text(
-                                text = number,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (number == "⌫") MaterialTheme.colorScheme.error else Color(0xFF1F1F1F)
-                            )
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.size(64.dp)) // Espacio vacío
-                    }
-                }
-            }
         }
     }
 }
