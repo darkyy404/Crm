@@ -1,5 +1,6 @@
 package com.example.proyectocrm
 
+import PantallaContactos
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
@@ -36,5 +37,7 @@ fun NavigationWrapper(navHostController: NavHostController) {
         // Pantalla de configuración de PIN
         composable("pantallaConfigurarPin") { PantallaConfigurarPin(navHostController) }
 
+        // Pantalla de contactos
+        composable("pantallaContactos") { PantallaContactos(navHostController) }
     }
 }
