@@ -29,41 +29,27 @@ import kotlinx.coroutines.launch
 fun PantallaHome(navHostController: NavHostController) {
     var selectedTab by remember { mutableStateOf(0) }
 
-    // Estados para almacenar los datos de los gráficos correspondientes a cada pestaña.
-    // Estos datos se obtendrán dinámicamente desde Firebase.
     var leadsData by remember { mutableStateOf<List<Entry>>(emptyList()) }
     var salesData by remember { mutableStateOf<List<Entry>>(emptyList()) }
     var ordersData by remember { mutableStateOf<List<Entry>>(emptyList()) }
-    var profileImageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen de perfil
+    var profileImageUrl by remember { mutableStateOf<String?>(null) }
 
-
-    // Esto asegura que cualquier tarea asíncrona que se lance aquí se cancelará automáticamente
-    // si el Composable deja de estar activo (por ejemplo, si el usuario cambia de pantalla).
     val coroutineScope = rememberCoroutineScope()
 
-    // Efecto secundario que se ejecuta cuando se inicia este Composable.
-    // `LaunchedEffect(Unit)` asegura que el bloque se ejecutará solo una vez al inicio,
-    // porque depende de `Unit` (que no cambia).
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             leadsData = ChartRepository.getChartData("leads").distinctBy { it.x }
             salesData = ChartRepository.getChartData("sales").distinctBy { it.x }
             ordersData = ChartRepository.getChartData("orders_chart").distinctBy { it.x }
-
-
-            // Imprime los datos cargados para verificar
-                println("Leads Data: $leadsData")
-            println("Sales Data: $salesData")
-            println("Orders Data: $ordersData")
         }
         val currentUser = FirebaseAuth.getInstance().currentUser
         currentUser?.let {
-            // Lógica para cargar la URL de la imagen desde Firestore
             obtenerImagenDePerfil(it.uid) { url ->
                 profileImageUrl = url
             }
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,8 +70,6 @@ fun PantallaHome(navHostController: NavHostController) {
             )
             IconButton(onClick = { navHostController.navigate("pantallaPerfil") }) {
                 if (profileImageUrl != null) {
-                    // Si se cargó una URL de Firebase, mostrar la imagen usando Coil
-                    // (una biblioteca que se utiliza para manejar imagenes dianmicas en Compose)
                     Image(
                         painter = rememberImagePainter(profileImageUrl),
                         contentDescription = "Imagen de perfil",
@@ -95,7 +79,6 @@ fun PantallaHome(navHostController: NavHostController) {
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    // Mostrar un placeholder mientras la URL de la imagen se carga
                     Image(
                         painter = painterResource(R.drawable.ic_profile_placeholder),
                         contentDescription = "Imagen de perfil",
@@ -107,6 +90,20 @@ fun PantallaHome(navHostController: NavHostController) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botón para ir a la pantalla de contactos
+        Button(
+            onClick = { navHostController.navigate("pantallaContactos") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(text = "Ir a Contactos")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Pestañas para seleccionar diferentes gráficos
         TabRow(
@@ -207,3 +204,4 @@ fun PantallaHome(navHostController: NavHostController) {
         OrderList()
     }
 }
+

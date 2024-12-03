@@ -1,10 +1,14 @@
 package com.example.proyectocrm
 
+import Contacto
 import PantallaContactos
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.proyectocrm.scenes.PantallaChat
 import com.example.proyectocrm.scenes.PantallaEditarPerfil
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
@@ -39,5 +43,13 @@ fun NavigationWrapper(navHostController: NavHostController) {
 
         // Pantalla de contactos
         composable("pantallaContactos") { PantallaContactos(navHostController) }
+        composable(
+            "pantallaChat/{nombreContacto}",
+            arguments = listOf(navArgument("nombreContacto") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val nombreContacto = backStackEntry.arguments?.getString("nombreContacto") ?: ""
+            PantallaChat(navHostController, Contacto(nombre = nombreContacto, ultimoMensaje = ""))
+        }
+
     }
 }

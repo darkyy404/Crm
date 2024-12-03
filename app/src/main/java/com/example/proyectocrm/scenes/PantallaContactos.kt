@@ -22,7 +22,7 @@ import com.example.proyectocrm.models.Contacto
 @Composable
 fun PantallaContactos(
     navHostController: NavHostController,
-    viewModel: ContactosViewModel = ContactosViewModel() // Agregar ViewModel aquí
+    viewModel: ContactosViewModel = ContactosViewModel() // ViewModel para manejar contactos
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val contactos by viewModel.contactos.collectAsState()
@@ -60,16 +60,16 @@ fun PantallaContactos(
                 }
             )
 
-            // Lista de contactos filtrados
+            // Lista de contactos filtrados con navegación al chat
             ContactList(
                 contactos = contactos,
-                onContactClick = {
-                    // Acción al hacer clic en un contacto
+                onContactClick = { contacto ->
+                    navHostController.navigate("pantallaChat/${contacto.nombre}")
                 }
             )
         }
 
-        // Botón flotante
+        // Botón flotante para agregar contactos
         FloatingActionButton(
             onClick = {
                 // Acción para agregar contacto
@@ -104,7 +104,7 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 }
 
 @Composable
-fun ContactList(contactos: List<com.example.proyectocrm.models.Contacto>, onContactClick: (Contacto) -> Unit) {
+fun ContactList(contactos: List<Contacto>, onContactClick: (Contacto) -> Unit) {
     LazyColumn {
         items(contactos) { contacto ->
             ContactoCard(contacto = contacto, onClick = { onContactClick(contacto) })
@@ -121,8 +121,10 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Añade tus elementos aquí
-        Text(text = contacto.nombre, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = contacto.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = contacto.ultimoMensaje, fontSize = 14.sp, color = Color.Gray)
+        }
     }
 }
 
