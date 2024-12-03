@@ -8,7 +8,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.proyectocrm.components.ContactosViewModel
 import com.example.proyectocrm.scenes.PantallaChat
+import com.example.proyectocrm.scenes.PantallaCrearContacto
 import com.example.proyectocrm.scenes.PantallaEditarPerfil
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
@@ -21,7 +23,7 @@ import com.example.proyectocrm.scenes.acceso.PantallaConfiguracionAcceso
 import com.example.proyectocrm.scenes.acceso.PantallaConfigurarPin
 
 @Composable
-fun NavigationWrapper(navHostController: NavHostController) {
+fun NavigationWrapper(navHostController: NavHostController, viewModel: ContactosViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
 
     NavHost(navController = navHostController, startDestination = "pantallaLogin") {
 
@@ -42,14 +44,32 @@ fun NavigationWrapper(navHostController: NavHostController) {
         composable("pantallaConfigurarPin") { PantallaConfigurarPin(navHostController) }
 
         // Pantalla de contactos
-        composable("pantallaContactos") { PantallaContactos(navHostController) }
+        composable("pantallaContactos") {
+            PantallaContactos(
+                navHostController = navHostController,
+                viewModel = viewModel // Pasamos el ViewModel compartido
+            )
+        }
+
+        // Pantalla del chat de un contacto
         composable(
             "pantallaChat/{nombreContacto}",
             arguments = listOf(navArgument("nombreContacto") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombreContacto = backStackEntry.arguments?.getString("nombreContacto") ?: ""
-            PantallaChat(navHostController, Contacto(nombre = nombreContacto, ultimoMensaje = ""))
+            PantallaChat(
+                navHostController = navHostController,
+                contacto = Contacto(nombre = nombreContacto, ultimoMensaje = "")
+            )
         }
 
+        // Pantalla para crear un contacto
+        composable("pantallaCrearContacto") {
+            PantallaCrearContacto(
+                navHostController = navHostController,
+                viewModel = viewModel // Pasamos el mismo ViewModel para compartir la lista de contactos
+            )
+        }
     }
 }
+

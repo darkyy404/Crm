@@ -22,10 +22,10 @@ import com.example.proyectocrm.models.Contacto
 @Composable
 fun PantallaContactos(
     navHostController: NavHostController,
-    viewModel: ContactosViewModel = ContactosViewModel() // ViewModel para manejar contactos
+    viewModel: ContactosViewModel
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val contactos by viewModel.contactos.collectAsState()
+    val contactos by viewModel.contactos.collectAsState() // Observamos los contactos en tiempo real
 
     Box(
         modifier = Modifier
@@ -72,7 +72,7 @@ fun PantallaContactos(
         // Botón flotante para agregar contactos
         FloatingActionButton(
             onClick = {
-                // Acción para agregar contacto
+                navHostController.navigate("pantallaCrearContacto")
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -83,7 +83,6 @@ fun PantallaContactos(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
