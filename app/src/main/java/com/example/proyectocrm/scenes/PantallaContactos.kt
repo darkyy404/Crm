@@ -1,4 +1,4 @@
-import androidx.compose.foundation.clickable // Para habilitar clics
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -19,14 +20,13 @@ fun PantallaContactos(
     navHostController: NavHostController,
     viewModel: ContactosViewModel
 ) {
-    var searchQuery by remember { mutableStateOf("") } // Estado para búsqueda
-    val contactos by viewModel.contactos.collectAsState() // Observación de la lista de contactos
+    var searchQuery by remember { mutableStateOf("") }
+    val contactos by viewModel.contactos.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Título
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -40,7 +40,6 @@ fun PantallaContactos(
                 )
             }
 
-            // Lista de contactos
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -49,35 +48,36 @@ fun PantallaContactos(
                 items(contactos) { contacto ->
                     ContactoCard(
                         contacto = contacto,
-                        onClick = { // Navegar al chat del contacto
-                            navHostController.navigate("pantallaChat/${contacto.nombre}")
-                        }
+                        onClick = { navHostController.navigate("pantallaChat/${contacto.nombre}") }
                     )
                 }
             }
         }
 
-        // Botón flotante para agregar contactos
+        // Botón flotante con color azul (0xFF007AFF) y símbolo blanco
         FloatingActionButton(
             onClick = { navHostController.navigate("pantallaCrearContacto") },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = Color(0xFF007AFF) // Color azul específico
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Agregar contacto")
+            Icon(
+                Icons.Default.Add,
+                contentDescription = "Agregar contacto",
+                tint = Color.White // Icono en blanco
+            )
         }
     }
 }
 
-// Card para cada contacto
 @Composable
 fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { onClick() }, // Llama a la acción al hacer clic
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(

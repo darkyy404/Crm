@@ -2,6 +2,7 @@ package com.example.proyectocrm
 
 import ContactosViewModel
 import PantallaContactos
+import PantallaHome
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
@@ -15,7 +16,6 @@ import com.example.proyectocrm.scenes.PantallaEditarPerfil
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
 import com.example.proyectocrm.scenes.PantallaRecuperarContrasena
-import com.example.proyectocrm.scenes.PantallaHome
 import com.example.proyectocrm.scenes.PantallaPerfil
 import com.example.proyectocrm.scenes.acceso.PantallaAccesoSeguro
 import com.example.proyectocrm.scenes.acceso.PantallaAccesoFallido
