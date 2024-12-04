@@ -1,6 +1,7 @@
 package com.example.proyectocrm
 
 import ContactosViewModel
+import PantallaCalendario
 import PantallaContactos
 import PantallaHome
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
         composable("pantallaHome") { PantallaHome(navHostController) }
         composable("pantallaPerfil") { PantallaPerfil(navHostController) }
         composable("pantallaEditarPerfil") { PantallaEditarPerfil(navHostController) }
+        composable("pantallaCalendario") { PantallaCalendario(navHostController) }
 
         // Pantallas de acceso seguro
         composable("pantallaConfiguracionAcceso") { PantallaConfiguracionAcceso(navHostController) }
