@@ -87,6 +87,7 @@ dependencies {
     implementation (libs.androidx.biometric)
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")
 
+    implementation ("com.kizitonwose.calendar:compose:1.0.0")
 
     // Test
     testImplementation(libs.junit)
