@@ -1,10 +1,11 @@
 package com.example.proyectocrm.components
 
-import Contacto
+
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
+import com.example.proyectocrm.models.Contacto
 
 @Composable
 fun ContactList(contactos: List<Contacto>, onContactClick: (Contacto) -> Unit) {

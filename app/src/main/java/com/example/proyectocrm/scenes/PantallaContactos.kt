@@ -1,22 +1,17 @@
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.clickable // Para habilitar clics
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.proyectocrm.components.ContactosViewModel
 import com.example.proyectocrm.models.Contacto
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,107 +19,84 @@ fun PantallaContactos(
     navHostController: NavHostController,
     viewModel: ContactosViewModel
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    val contactos by viewModel.contactos.collectAsState() // Observamos los contactos en tiempo real
+    var searchQuery by remember { mutableStateOf("") } // Estado para búsqueda
+    val contactos by viewModel.contactos.collectAsState() // Observación de la lista de contactos
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 64.dp) // Espacio para que no tape la lista
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Título centrado
+            // Título
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Contactos",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
                 )
             }
 
-            // Barra de búsqueda
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = {
-                    searchQuery = it
-                    viewModel.buscarContactos(it)
+            // Lista de contactos
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(contactos) { contacto ->
+                    ContactoCard(
+                        contacto = contacto,
+                        onClick = { // Navegar al chat del contacto
+                            navHostController.navigate("pantallaChat/${contacto.nombre}")
+                        }
+                    )
                 }
-            )
-
-            // Lista de contactos filtrados con navegación al chat
-            ContactList(
-                contactos = contactos,
-                onContactClick = { contacto ->
-                    navHostController.navigate("pantallaChat/${contacto.nombre}")
-                }
-            )
+            }
         }
 
         // Botón flotante para agregar contactos
         FloatingActionButton(
-            onClick = {
-                navHostController.navigate("pantallaCrearContacto")
-            },
+            onClick = { navHostController.navigate("pantallaCrearContacto") },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            containerColor = Color(0xFF007BFF)
+            containerColor = MaterialTheme.colorScheme.primary
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Agregar contacto", tint = Color.White)
-        }
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { Text("Buscar contactos") },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = Color(0xFFECECEC),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        )
-    )
-}
-
-@Composable
-fun ContactList(contactos: List<Contacto>, onContactClick: (Contacto) -> Unit) {
-    LazyColumn {
-        items(contactos) { contacto ->
-            ContactoCard(contacto = contacto, onClick = { onContactClick(contacto) })
+            Icon(Icons.Default.Add, contentDescription = "Agregar contacto")
         }
     }
 }
 
+// Card para cada contacto
 @Composable
 fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 4.dp)
+            .clickable { onClick() }, // Llama a la acción al hacer clic
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = contacto.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(text = contacto.ultimoMensaje, fontSize = 14.sp, color = Color.Gray)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = contacto.nombre,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = contacto.ultimoMensaje,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
-
-data class Contacto(val nombre: String, val ultimoMensaje: String)
