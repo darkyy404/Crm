@@ -60,9 +60,20 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
             arguments = listOf(navArgument("nombreContacto") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombreContacto = backStackEntry.arguments?.getString("nombreContacto") ?: ""
+            val categoria = ""
+            val direccion = ""
+            val telefono = ""
+            val rol = ""
             PantallaChat(
                 navHostController = navHostController,
-                contacto = Contacto(nombre = nombreContacto, ultimoMensaje = "")
+                contacto = Contacto(
+                    nombre = nombreContacto,
+                    ultimoMensaje = "",
+                    categoria = categoria,
+                    direccion = direccion,
+                    telefono = telefono,
+                    rol = rol
+                )
             )
         }
 

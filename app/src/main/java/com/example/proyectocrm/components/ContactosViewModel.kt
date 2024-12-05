@@ -39,4 +39,9 @@ class ContactosViewModel : ViewModel() {
                 println("Error al agregar contacto: ${e.message}")
             }
     }
+
+    // Método para obtener un contacto específico por nombre
+    fun getContactoByName(nombre: String): Contacto? {
+        return allContactos.find { it.nombre == nombre }
+    }
 }

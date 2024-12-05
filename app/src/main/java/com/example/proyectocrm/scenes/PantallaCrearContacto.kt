@@ -6,10 +6,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color // Importar Color correctamente
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.proyectocrm.models.Contacto // Importar Contacto correctamente
+import com.example.proyectocrm.models.Contacto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,14 +18,17 @@ fun PantallaCrearContacto(
     viewModel: ContactosViewModel
 ) {
     var nombre by remember { mutableStateOf("") }
-    var ultimoMensaje by remember { mutableStateOf("") }
+    var rol by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
+    var categoria by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Top
     ) {
         Text(
             text = "Crear Contacto",
@@ -33,28 +36,23 @@ fun PantallaCrearContacto(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        TextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
+        // Campos del formulario
+        TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
         Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = ultimoMensaje,
-            onValueChange = { ultimoMensaje = it },
-            label = { Text("Mensaje Inicial") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        TextField(value = rol, onValueChange = { rol = it }, label = { Text("Rol") })
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(value = email, onValueChange = { email = it }, label = { Text("Correo Electrónico") })
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(value = telefono, onValueChange = { telefono = it }, label = { Text("Teléfono") })
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(value = direccion, onValueChange = { direccion = it }, label = { Text("Dirección") })
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(value = categoria, onValueChange = { categoria = it }, label = { Text("Categoría") })
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        // Botones
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = { navHostController.popBackStack() },
                 modifier = Modifier.weight(1f)
@@ -64,15 +62,25 @@ fun PantallaCrearContacto(
             Spacer(modifier = Modifier.width(16.dp))
             Button(
                 onClick = {
-                    val nuevoContacto = Contacto(nombre, ultimoMensaje)
-                    viewModel.agregarContacto(nuevoContacto) // Llama al método para agregar el contacto
-                    navHostController.popBackStack() // Regresa a la pantalla anterior
+                    // Crear el contacto
+                    val nuevoContacto = Contacto(
+                        nombre = nombre,
+                        ultimoMensaje = "Nuevo contacto añadido",
+                        rol = rol,
+                        email = email,
+                        telefono = telefono,
+                        direccion = direccion,
+                        categoria = categoria
+                    )
+                    viewModel.agregarContacto(nuevoContacto) // Agregar al ViewModel
+                    navHostController.popBackStack() // Regresar
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF)) // Color para el botón
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF))
             ) {
                 Text("Guardar")
             }
         }
     }
 }
+

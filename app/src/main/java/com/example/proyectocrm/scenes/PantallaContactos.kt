@@ -24,7 +24,6 @@ fun PantallaContactos(
     navHostController: NavHostController,
     viewModel: ContactosViewModel
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     val contactos by viewModel.contactos.collectAsState()
 
     Scaffold(
@@ -114,7 +113,7 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 8.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -124,15 +123,34 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = contacto.nombre,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = contacto.ultimoMensaje,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = contacto.rol,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "✉️ ${contacto.email}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "📞 ${contacto.telefono}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "📍 ${contacto.direccion}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
                 )
             }
         }
