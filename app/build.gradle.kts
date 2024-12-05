@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.proyectocrm"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -87,7 +87,10 @@ dependencies {
     implementation (libs.androidx.biometric)
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")
 
-    implementation ("com.kizitonwose.calendar:compose:1.0.0")
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.compose.material3:material3:1.1.0-alpha08")
+
+
 
     // Test
     testImplementation(libs.junit)
