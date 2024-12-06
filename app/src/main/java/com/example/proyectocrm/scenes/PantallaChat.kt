@@ -26,8 +26,7 @@ import com.example.proyectocrm.models.Contacto
 fun PantallaChat(
     navHostController: NavHostController,
     contacto: Contacto,
-    onDelete: (Contacto) -> Unit,
-    onEdit: (Contacto) -> Unit
+    onDelete: (Contacto) -> Unit // Recibe la función para eliminar
 ) {
     Scaffold(
         topBar = {
@@ -80,28 +79,19 @@ fun PantallaChat(
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Botones de acción
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            // Botón para eliminar el contacto
+            Button(
+                onClick = {
+                    onDelete(contacto) // Llama a la función para eliminar
+                    navHostController.popBackStack() // Vuelve a la pantalla anterior
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
             ) {
-                Button(
-                    onClick = { onEdit(contacto) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
-                ) {
-                    Text("Editar", color = Color.White)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Button(
-                    onClick = { onDelete(contacto) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) {
-                    Text("Eliminar", color = Color.White)
-                }
+                Text("Eliminar contacto", color = Color.White)
             }
         }
     }
 }
+

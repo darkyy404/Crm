@@ -117,16 +117,11 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
                     ultimoMensaje = ""
                 ),
                 onDelete = { contacto ->
-                    viewModel.eliminarContacto(contacto)
-                    navHostController.popBackStack() // Regresar a la pantalla de contactos
-                },
-                onEdit = { contacto ->
-                    navHostController.navigate(
-                        "pantallaEditarContacto/${contacto.nombre}/${contacto.rol}/${contacto.email}/${contacto.telefono}/${contacto.direccion}"
-                    )
+                    viewModel.eliminarContacto(contacto) // Llama a la función del ViewModel
                 }
             )
         }
+
 
 
 

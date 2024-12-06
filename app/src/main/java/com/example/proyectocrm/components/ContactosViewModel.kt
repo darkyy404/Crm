@@ -46,21 +46,29 @@ class ContactosViewModel : ViewModel() {
     }
 
     fun eliminarContacto(contacto: Contacto) {
-        db.collection("contactos").whereEqualTo("email", contacto.email).get()
-            .addOnSuccessListener { snapshot ->
-                for (document in snapshot.documents) {
+        db.collection("contactos")
+            .whereEqualTo("nombre", contacto.nombre) // Suponiendo que el nombre es único
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
                     db.collection("contactos").document(document.id).delete()
+                        .addOnSuccessListener {
+                            println("Contacto eliminado de Firebase: ${contacto.nombre}")
+                            // Actualizamos la lista local
+                            val listaActualizada = _contactos.value.toMutableList()
+                            listaActualizada.remove(contacto)
+                            _contactos.value = listaActualizada
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error al eliminar contacto de Firebase: ${e.message}")
+                        }
                 }
-                // Eliminar de la lista local
-                val updatedList = allContactos.filter { it.email != contacto.email }
-                allContactos.clear()
-                allContactos.addAll(updatedList)
-                _contactos.value = updatedList
             }
             .addOnFailureListener { e ->
-                println("Error al eliminar contacto: ${e.message}")
+                println("Error al buscar contacto para eliminar: ${e.message}")
             }
     }
+
 
     fun actualizarContacto(contactoActualizado: Contacto) {
 
