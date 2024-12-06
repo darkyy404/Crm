@@ -1,3 +1,4 @@
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -84,7 +85,15 @@ fun PantallaContactos(
                     items(contactos) { contacto ->
                         ContactoCard(
                             contacto = contacto,
-                            onClick = { navHostController.navigate("pantallaChat/${contacto.nombre}") }
+                            onClick = {
+                                navHostController.navigate(
+                                    "pantallaChat/${Uri.encode(contacto.nombre)}/" +
+                                            "${Uri.encode(contacto.rol)}/" +
+                                            "${Uri.encode(contacto.email)}/" +
+                                            "${Uri.encode(contacto.telefono)}/" +
+                                            "${Uri.encode(contacto.direccion)}"
+                                )
+                            }
                         )
                     }
                 }

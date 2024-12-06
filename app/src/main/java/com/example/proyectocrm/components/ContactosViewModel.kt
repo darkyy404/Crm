@@ -44,4 +44,27 @@ class ContactosViewModel : ViewModel() {
     fun getContactoByName(nombre: String): Contacto? {
         return allContactos.find { it.nombre == nombre }
     }
+
+    fun eliminarContacto(contacto: Contacto) {
+        db.collection("contactos").whereEqualTo("email", contacto.email).get()
+            .addOnSuccessListener { snapshot ->
+                for (document in snapshot.documents) {
+                    db.collection("contactos").document(document.id).delete()
+                }
+                // Eliminar de la lista local
+                val updatedList = allContactos.filter { it.email != contacto.email }
+                allContactos.clear()
+                allContactos.addAll(updatedList)
+                _contactos.value = updatedList
+            }
+            .addOnFailureListener { e ->
+                println("Error al eliminar contacto: ${e.message}")
+            }
+    }
+
+    fun actualizarContacto(contactoActualizado: Contacto) {
+
+    }
+
 }
+

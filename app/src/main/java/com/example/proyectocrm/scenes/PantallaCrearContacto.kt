@@ -70,7 +70,6 @@ fun PantallaCrearContacto(
                         email = email,
                         telefono = telefono,
                         direccion = direccion,
-                        categoria = categoria
                     )
                     viewModel.agregarContacto(nuevoContacto) // Agregar al ViewModel
                     navHostController.popBackStack() // Regresar
