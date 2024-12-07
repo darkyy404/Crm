@@ -13,7 +13,6 @@ import androidx.navigation.navArgument
 import com.example.proyectocrm.models.Contacto
 import com.example.proyectocrm.scenes.PantallaChat
 import com.example.proyectocrm.scenes.PantallaCrearContacto
-import com.example.proyectocrm.scenes.PantallaEditarContacto
 import com.example.proyectocrm.scenes.PantallaEditarPerfil
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
@@ -72,68 +71,46 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
             val telefono = backStackEntry.arguments?.getString("telefono") ?: ""
             val direccion = backStackEntry.arguments?.getString("direccion") ?: ""
 
-            PantallaEditarContacto(
-                navHostController = navHostController,
-                contacto = Contacto(
-                    nombre = nombre,
-                    rol = rol,
-                    email = email,
-                    telefono = telefono,
-                    direccion = direccion,
-                    ultimoMensaje = ""
-                ),
-                onSave = { contactoActualizado ->
-                    viewModel.actualizarContacto(contactoActualizado)
-                },
-                onCancel = { navHostController.popBackStack() }
-            )
-        }
+            composable(
+                route = "pantallaChat/{nombre}/{rol}/{email}/{telefono}/{direccion}",
+                arguments = listOf(
+                    navArgument("nombre") { type = NavType.StringType },
+                    navArgument("rol") { type = NavType.StringType },
+                    navArgument("email") { type = NavType.StringType },
+                    navArgument("telefono") { type = NavType.StringType },
+                    navArgument("direccion") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
+                val rol = backStackEntry.arguments?.getString("rol") ?: ""
+                val email = backStackEntry.arguments?.getString("email") ?: ""
+                val telefono = backStackEntry.arguments?.getString("telefono") ?: ""
+                val direccion = backStackEntry.arguments?.getString("direccion") ?: ""
+
+                PantallaChat(
+                    navHostController = navHostController,
+                    contacto = Contacto(
+                        nombre = nombre,
+                        rol = rol,
+                        email = email,
+                        telefono = telefono,
+                        direccion = direccion,
+                        ultimoMensaje = ""
+                    ),
+                    onDelete = { contacto ->
+                        viewModel.eliminarContacto(contacto) // Llama a la función del ViewModel
+                    }
+                )
+            }
 
 
-        composable(
-            route = "pantallaChat/{nombre}/{rol}/{email}/{telefono}/{direccion}",
-            arguments = listOf(
-                navArgument("nombre") { type = NavType.StringType },
-                navArgument("rol") { type = NavType.StringType },
-                navArgument("email") { type = NavType.StringType },
-                navArgument("telefono") { type = NavType.StringType },
-                navArgument("direccion") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
-            val rol = backStackEntry.arguments?.getString("rol") ?: ""
-            val email = backStackEntry.arguments?.getString("email") ?: ""
-            val telefono = backStackEntry.arguments?.getString("telefono") ?: ""
-            val direccion = backStackEntry.arguments?.getString("direccion") ?: ""
-
-            PantallaChat(
-                navHostController = navHostController,
-                contacto = Contacto(
-                    nombre = nombre,
-                    rol = rol,
-                    email = email,
-                    telefono = telefono,
-                    direccion = direccion,
-                    ultimoMensaje = ""
-                ),
-                onDelete = { contacto ->
-                    viewModel.eliminarContacto(contacto) // Llama a la función del ViewModel
-                }
-            )
-        }
-
-
-
-
-
-
-
-        // Pantalla para crear un contacto
-        composable("pantallaCrearContacto") {
-            PantallaCrearContacto(
-                navHostController = navHostController,
-                viewModel = viewModel // Pasamos el mismo ViewModel para compartir la lista de contactos
-            )
+            // Pantalla para crear un contacto
+            composable("pantallaCrearContacto") {
+                PantallaCrearContacto(
+                    navHostController = navHostController,
+                    viewModel = viewModel // Pasamos el mismo ViewModel para compartir la lista de contactos
+                )
+            }
         }
     }
 }
