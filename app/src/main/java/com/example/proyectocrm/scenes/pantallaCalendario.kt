@@ -5,8 +5,6 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -81,8 +79,11 @@ fun PantallaCalendario(navHostController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Botón para mostrar el DatePickerDialog
-            Button(onClick = { datePickerDialog.show() }) {
-                Text(text = "Seleccionar Fecha")
+            Button(
+                onClick = { datePickerDialog.show() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF)) // Fondo azul
+            ) {
+                Text(text = "Seleccionar Fecha", color = Color.White) // Texto blanco
             }
 
             Spacer(modifier = Modifier.height(16.dp))

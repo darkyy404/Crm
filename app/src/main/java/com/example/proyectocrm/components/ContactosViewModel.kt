@@ -9,8 +9,6 @@ class ContactosViewModel : ViewModel() {
     private val _contactos = MutableStateFlow<List<Contacto>>(emptyList())
     val contactos: StateFlow<List<Contacto>> = _contactos
 
-    private val allContactos = mutableListOf<Contacto>() // Lista completa de contactos
-
     init {
         // Escuchar cambios en Firestore
         db.collection("contactos").addSnapshotListener { snapshot, e ->
@@ -18,49 +16,49 @@ class ContactosViewModel : ViewModel() {
                 println("Error al cargar contactos: ${e.message}")
                 return@addSnapshotListener
             }
-            if (snapshot != null && !snapshot.isEmpty) {
+            if (snapshot != null) {
                 val nuevosContactos = snapshot.documents.mapNotNull { it.toObject(Contacto::class.java) }
-                allContactos.clear()
-                allContactos.addAll(nuevosContactos)
-                _contactos.value = allContactos // Actualizamos la lista observada
+                _contactos.value = nuevosContactos.distinctBy { it.email } // Aseguramos que no haya duplicados
             }
         }
     }
 
     // Método para agregar un nuevo contacto
     fun agregarContacto(contacto: Contacto) {
-        db.collection("contactos").add(contacto)
-            .addOnSuccessListener {
-                println("Contacto agregado: $contacto")
-                allContactos.add(contacto)
-                _contactos.value = allContactos // Actualizamos la lista observada
+        db.collection("contactos")
+            .whereEqualTo("email", contacto.email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    db.collection("contactos").add(contacto)
+                        .addOnSuccessListener {
+                            println("Contacto agregado: ${contacto.nombre}")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error al agregar contacto: ${e.message}")
+                        }
+                } else {
+                    println("El contacto ya existe: ${contacto.email}")
+                }
             }
             .addOnFailureListener { e ->
-                println("Error al agregar contacto: ${e.message}")
+                println("Error al verificar existencia de contacto: ${e.message}")
             }
     }
 
-    // Método para obtener un contacto específico por nombre
-    fun getContactoByName(nombre: String): Contacto? {
-        return allContactos.find { it.nombre == nombre }
-    }
-
+    // Método para eliminar un contacto
     fun eliminarContacto(contacto: Contacto) {
         db.collection("contactos")
-            .whereEqualTo("nombre", contacto.nombre) // Suponiendo que el nombre es único
+            .whereEqualTo("email", contacto.email) // Usamos email como identificador único
             .get()
             .addOnSuccessListener { querySnapshot ->
                 for (document in querySnapshot.documents) {
                     db.collection("contactos").document(document.id).delete()
                         .addOnSuccessListener {
-                            println("Contacto eliminado de Firebase: ${contacto.nombre}")
-                            // Actualizamos la lista local
-                            val listaActualizada = _contactos.value.toMutableList()
-                            listaActualizada.remove(contacto)
-                            _contactos.value = listaActualizada
+                            println("Contacto eliminado: ${contacto.nombre}")
                         }
                         .addOnFailureListener { e ->
-                            println("Error al eliminar contacto de Firebase: ${e.message}")
+                            println("Error al eliminar contacto: ${e.message}")
                         }
                 }
             }
@@ -69,10 +67,24 @@ class ContactosViewModel : ViewModel() {
             }
     }
 
-
+    // Método para actualizar un contacto existente
     fun actualizarContacto(contactoActualizado: Contacto) {
-
+        db.collection("contactos")
+            .whereEqualTo("email", contactoActualizado.email)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    db.collection("contactos").document(document.id).set(contactoActualizado)
+                        .addOnSuccessListener {
+                            println("Contacto actualizado: ${contactoActualizado.nombre}")
+                        }
+                        .addOnFailureListener { e ->
+                            println("Error al actualizar contacto: ${e.message}")
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                println("Error al buscar contacto para actualizar: ${e.message}")
+            }
     }
-
 }
-

@@ -1,7 +1,9 @@
 package com.example.proyectocrm.scenes
 
 import ContactosViewModel
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,25 +39,30 @@ fun PantallaCrearContacto(
         )
 
         // Campos del formulario
-        TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+        CustomTextField(value = nombre, onValueChange = { nombre = it }, label = "Nombre")
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(value = rol, onValueChange = { rol = it }, label = { Text("Rol") })
+        CustomTextField(value = rol, onValueChange = { rol = it }, label = "Rol")
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(value = email, onValueChange = { email = it }, label = { Text("Correo Electrónico") })
+        CustomTextField(value = email, onValueChange = { email = it }, label = "Correo Electrónico")
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(value = telefono, onValueChange = { telefono = it }, label = { Text("Teléfono") })
+        CustomTextField(value = telefono, onValueChange = { telefono = it }, label = "Teléfono")
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(value = direccion, onValueChange = { direccion = it }, label = { Text("Dirección") })
+        CustomTextField(value = direccion, onValueChange = { direccion = it }, label = "Dirección")
         Spacer(modifier = Modifier.height(16.dp))
-        TextField(value = categoria, onValueChange = { categoria = it }, label = { Text("Categoría") })
+        CustomTextField(value = categoria, onValueChange = { categoria = it }, label = "Categoría")
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Botones
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Button(
+            OutlinedButton(
                 onClick = { navHostController.popBackStack() },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White, // Fondo blanco
+                    contentColor = Color(0xFF007BFF) // Letras en azul
+                ),
+                border = BorderStroke(1.dp, Color(0xFF007BFF)) // Bordes en azul
             ) {
                 Text("Cancelar")
             }
@@ -75,11 +82,31 @@ fun PantallaCrearContacto(
                     navHostController.popBackStack() // Regresar
                 },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF)) // Botón de guardar azul
             ) {
-                Text("Guardar")
+                Text("Guardar", color = Color.White)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTextField(value: String, onValueChange: (String) -> Unit, label: String) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, color = Color(0xFF007BFF)) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = Color.White, // Fondo blanco
+            focusedIndicatorColor = Color(0xFF007BFF), // Borde en azul al enfocar
+            unfocusedIndicatorColor = Color(0xFF007BFF), // Borde en azul al desenfocar
+            focusedLabelColor = Color(0xFF007BFF), // Texto del label en azul al enfocar
+            cursorColor = Color(0xFF007BFF) // Color del cursor
+        ),
+        shape = RoundedCornerShape(8.dp) // Bordes redondeados
+    )
+}
