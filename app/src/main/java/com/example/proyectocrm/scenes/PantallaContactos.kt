@@ -124,34 +124,41 @@ fun PantallaContactos(
                 items(filteredContactos) { contacto ->
                     ContactoCard(
                         contacto = contacto,
+                        viewModel = viewModel,
+                        navHostController = navHostController,
                         onClick = {
                             navHostController.navigate(
-                                "pantallaChat/${Uri.encode(contacto.nombre)}/" +
-                                        "${Uri.encode(contacto.rol)}/" +
-                                        "${Uri.encode(contacto.email)}/" +
-                                        "${Uri.encode(contacto.telefono)}/" +
-                                        "${Uri.encode(contacto.direccion)}"
+                                "pantallaChat/${Uri.encode(contacto.nombre)}"
                             )
-                        },
-                        onEditClick = { viewModel.actualizarContacto(contacto) },
-                        onDeleteClick = { viewModel.eliminarContacto(contacto) }
+                        }
                     )
                 }
             }
+
+
         }
     }
 }
 
 
 
+
 @Composable
-fun ContactoCard(contacto: Contacto, onClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+fun ContactoCard(
+    contacto: Contacto,
+    viewModel: ContactosViewModel,
+    navHostController: NavHostController,
+    onClick: () -> Unit
+) {
     var expandedMenu by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable {
+                // Acción al hacer clic en la tarjeta (puede navegar al detalle del contacto)
+                navHostController.navigate("pantallaChat/${Uri.encode(contacto.nombre)}")
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -201,18 +208,21 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit, onEditClick: () -> Uni
                     expanded = expandedMenu,
                     onDismissRequest = { expandedMenu = false }
                 ) {
+                    // Opción para Editar
                     DropdownMenuItem(
                         text = { Text("Editar") },
                         onClick = {
                             expandedMenu = false
-                            onEditClick()
+                            viewModel.seleccionarContacto(contacto) // Selecciona el contacto en el ViewModel
+                            navHostController.navigate("pantallaEditarContacto") // Navega a la pantalla de edición
                         }
                     )
+                    // Opción para Eliminar
                     DropdownMenuItem(
                         text = { Text("Eliminar") },
                         onClick = {
                             expandedMenu = false
-                            onDeleteClick()
+                            viewModel.eliminarContacto(contacto) // Llama al método de eliminar en el ViewModel
                         }
                     )
                 }

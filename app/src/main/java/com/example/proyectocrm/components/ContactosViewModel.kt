@@ -9,6 +9,9 @@ class ContactosViewModel : ViewModel() {
     private val _contactos = MutableStateFlow<List<Contacto>>(emptyList())
     val contactos: StateFlow<List<Contacto>> = _contactos
 
+    private val _contactoSeleccionado = MutableStateFlow<Contacto?>(null)
+    val contactoSeleccionado: StateFlow<Contacto?> = _contactoSeleccionado
+
     init {
         // Escuchar cambios en Firestore
         db.collection("contactos").addSnapshotListener { snapshot, e ->
@@ -21,6 +24,16 @@ class ContactosViewModel : ViewModel() {
                 _contactos.value = nuevosContactos.distinctBy { it.email } // Aseguramos que no haya duplicados
             }
         }
+    }
+
+    // Método para seleccionar un contacto
+    fun seleccionarContacto(contacto: Contacto) {
+        _contactoSeleccionado.value = contacto
+    }
+
+    // Método para limpiar el contacto seleccionado
+    fun limpiarSeleccion() {
+        _contactoSeleccionado.value = null
     }
 
     // Método para agregar un nuevo contacto

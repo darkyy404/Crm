@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.example.proyectocrm.models.Contacto
 import com.example.proyectocrm.scenes.PantallaChat
 import com.example.proyectocrm.scenes.PantallaCrearContacto
+import com.example.proyectocrm.scenes.PantallaEditarContacto
 import com.example.proyectocrm.scenes.PantallaEditarPerfil
 import com.example.proyectocrm.scenes.PantallaLogin
 import com.example.proyectocrm.scenes.PantallaRegistro
@@ -94,5 +95,10 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
                 viewModel = viewModel // Pasamos el mismo ViewModel para compartir la lista de contactos
             )
         }
+        // pantalla Editar Contacto
+        composable(route = "pantallaEditarContacto") {
+            PantallaEditarContacto(navHostController, viewModel)
+        }
+
     }
 }
