@@ -1,8 +1,11 @@
 package com.example.proyectocrm.scenes
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,6 +44,25 @@ fun PantallaRecuperarContrasena(navHostController: NavHostController) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .align(Alignment.TopStart) // Alineación en la parte superior izquierda
+                .padding(16.dp), // Ajuste de espacio
+        ) {
+            // Botón de volver atrás
+            IconButton(
+                onClick = { navHostController.popBackStack() }, // Regresa a la pantalla anterior
+                modifier = Modifier.size(48.dp) // Tamaño del botón
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver",
+                    tint = Color.White
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -73,7 +95,7 @@ fun PantallaRecuperarContrasena(navHostController: NavHostController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            /// Campo de email
+            // Campo de email
             OutlinedTextField(
                 value = email.value,
                 onValueChange = { email.value = it },
@@ -91,11 +113,9 @@ fun PantallaRecuperarContrasena(navHostController: NavHostController) {
                     .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
             )
 
-
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de registro
+            // Botón de recuperación
             Button(
                 onClick = {
                     isLoading.value = true
@@ -116,7 +136,7 @@ fun PantallaRecuperarContrasena(navHostController: NavHostController) {
                 if (isLoading.value) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
                 } else {
-                    Text(text = "Registro", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(text = "Enviar", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -133,6 +153,7 @@ fun PantallaRecuperarContrasena(navHostController: NavHostController) {
         }
     }
 }
+
 
 // Función para enviar el correo de recuperación
 fun enviarCorreoRecuperacionSeguro(

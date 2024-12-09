@@ -1,14 +1,19 @@
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Contacts
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +33,25 @@ fun PantallaContactos(
     val contactos by viewModel.contactos.collectAsState()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Contactos", color = Color(0xFF1F1F1F)) },
+                navigationIcon = {
+                    IconButton(onClick = { navHostController.navigate("pantallaHome") }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color(0xFF007AFF))
+                    }
+                },
+                colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.White)
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navHostController.navigate("pantallaCrearContacto") },
+                containerColor = Color(0xFF007AFF)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar contacto", tint = Color.White)
+            }
+        },
         bottomBar = {
             BottomAppBar(
                 containerColor = Color.White,
@@ -60,62 +84,56 @@ fun PantallaContactos(
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Barra de búsqueda
+            OutlinedTextField(
+                value = "",
+                onValueChange = { /* Actualizar búsqueda */ },
+                placeholder = { Text("Buscar contacto", color = Color.Gray) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.Gray)
+                },
+                trailingIcon = {
+                    Icon(Icons.Default.FilterList, contentDescription = "Filtrar", tint = Color.Gray)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Lista de contactos
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Contactos",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineMedium
+                items(contactos) { contacto ->
+                    ContactoCard(
+                        contacto = contacto,
+                        onClick = {
+                            navHostController.navigate(
+                                "pantallaChat/${Uri.encode(contacto.nombre)}/" +
+                                        "${Uri.encode(contacto.rol)}/" +
+                                        "${Uri.encode(contacto.email)}/" +
+                                        "${Uri.encode(contacto.telefono)}/" +
+                                        "${Uri.encode(contacto.direccion)}"
+                            )
+                        }
                     )
                 }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    items(contactos) { contacto ->
-                        ContactoCard(
-                            contacto = contacto,
-                            onClick = {
-                                navHostController.navigate(
-                                    "pantallaChat/${Uri.encode(contacto.nombre)}/" +
-                                            "${Uri.encode(contacto.rol)}/" +
-                                            "${Uri.encode(contacto.email)}/" +
-                                            "${Uri.encode(contacto.telefono)}/" +
-                                            "${Uri.encode(contacto.direccion)}"
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-            // Botón flotante para agregar contactos
-            FloatingActionButton(
-                onClick = { navHostController.navigate("pantallaCrearContacto") },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                containerColor = Color(0xFF007AFF) // Color azul específico
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Agregar contacto",
-                    tint = Color.White // Icono en blanco
-                )
             }
         }
     }
 }
+
 
 @Composable
 fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
