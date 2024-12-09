@@ -124,7 +124,9 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Row(
             modifier = Modifier
@@ -138,8 +140,10 @@ fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
                 Text(
                     text = contacto.nombre,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF007AFF)
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = contacto.rol,
                     style = MaterialTheme.typography.bodyMedium,
