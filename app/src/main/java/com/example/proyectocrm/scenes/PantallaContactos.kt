@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +33,10 @@ fun PantallaContactos(
     viewModel: ContactosViewModel
 ) {
     val contactos by viewModel.contactos.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredContactos = contactos.filter {
+        it.nombre.contains(searchQuery, ignoreCase = true) || it.email.contains(searchQuery, ignoreCase = true)
+    }
 
     Scaffold(
         topBar = {
@@ -92,10 +98,10 @@ fun PantallaContactos(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Barra de búsqueda
+            // Barra de búsqueda funcional
             OutlinedTextField(
-                value = "",
-                onValueChange = { /* Actualizar búsqueda */ },
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
                 placeholder = { Text("Buscar contacto", color = Color.Gray) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.Gray)
@@ -110,12 +116,12 @@ fun PantallaContactos(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de contactos
+            // Lista de contactos filtrados
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(contactos) { contacto ->
+                items(filteredContactos) { contacto ->
                     ContactoCard(
                         contacto = contacto,
                         onClick = {
@@ -126,6 +132,87 @@ fun PantallaContactos(
                                         "${Uri.encode(contacto.telefono)}/" +
                                         "${Uri.encode(contacto.direccion)}"
                             )
+                        },
+                        onEditClick = { viewModel.actualizarContacto(contacto) },
+                        onDeleteClick = { viewModel.eliminarContacto(contacto) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun ContactoCard(contacto: Contacto, onClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+    var expandedMenu by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Imagen de perfil (placeholder)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(Color(0xFFF5F5F5), shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = contacto.nombre.firstOrNull()?.toString() ?: "",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF007AFF)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Información del contacto
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = contacto.nombre,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F1F1F)
+                )
+                Text(
+                    text = contacto.email,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+
+            // Menú de opciones
+            Box {
+                IconButton(onClick = { expandedMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.Gray)
+                }
+                DropdownMenu(
+                    expanded = expandedMenu,
+                    onDismissRequest = { expandedMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Editar") },
+                        onClick = {
+                            expandedMenu = false
+                            onEditClick()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Eliminar") },
+                        onClick = {
+                            expandedMenu = false
+                            onDeleteClick()
                         }
                     )
                 }
@@ -135,55 +222,3 @@ fun PantallaContactos(
 }
 
 
-@Composable
-fun ContactoCard(contacto: Contacto, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = contacto.nombre,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF007AFF)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = contacto.rol,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "✉️ ${contacto.email}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Text(
-                    text = "📞 ${contacto.telefono}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Text(
-                    text = "📍 ${contacto.direccion}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-        }
-    }
-}
