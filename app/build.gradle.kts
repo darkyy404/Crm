@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.proyectocrm"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -69,6 +69,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics") // Firebase Analytics
     implementation("com.google.firebase:firebase-auth") // Firebase Authentication
+    implementation ("com.google.firebase:firebase-firestore-ktx")
+
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
@@ -77,6 +79,18 @@ dependencies {
     implementation("com.google.accompanist:accompanist-coil:0.15.0")
     implementation("io.coil-kt:coil-compose:2.0.0")
     implementation("io.coil-kt:coil-svg:2.0.0")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.animation.core.lint)
+    implementation ("androidx.compose.material:material-icons-extended:<latest_version>")
+    implementation(libs.firebase.storage.ktx)
+    implementation (libs.androidx.biometric)
+    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.compose.material3:material3:1.1.0-alpha08")
+
+
 
     // Test
     testImplementation(libs.junit)

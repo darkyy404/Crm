@@ -1,11 +1,11 @@
 package com.example.proyectocrm.scenes
 
 import android.app.Activity
+import android.content.Context
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -27,18 +28,30 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaLogin(navHostController: NavHostController) {
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
     val message = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf(TextFieldValue("")) }
-    val password = remember { mutableStateOf(TextFieldValue("")) }
+    val email = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val rememberMe = remember { mutableStateOf(false) }
+
+    // Comprobar si ya hay un PIN configurado y redirigir automáticamente si aplica
+    LaunchedEffect(Unit) {
+        val savedPin = leerPreferencia(context, "user_pin")
+        if (!savedPin.isNullOrEmpty()) {
+            navHostController.navigate("pantallaAccesoSeguro")
+        }
+    }
 
     // Configuración de Google Sign-In
     val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("7577710609-mg8frfipf87pj48bi3ndne4t62tqjp86.apps.googleusercontent.com")
+        .requestIdToken("314609855316-momoqbcv11cil4bu7ru88ktuqten9al2.apps.googleusercontent.com")
         .requestEmail()
         .build()
     val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
@@ -52,121 +65,226 @@ fun PantallaLogin(navHostController: NavHostController) {
                 val account = task.getResult(ApiException::class.java)
                 account?.let {
                     val credential = GoogleAuthProvider.getCredential(it.idToken, null)
-                    auth.signInWithCredential(credential)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                message.value = "Inicio de sesión con Google exitoso"
-                                navHostController.navigate("PantallaMenu")
-                            } else {
-                                message.value = "Error: ${task.exception?.message}"
-                            }
+                    auth.signInWithCredential(credential).addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // Inicio de sesión exitoso con Google
+                            message.value = "Inicio de sesión con Google exitoso"
+                            handlePostLogin(navHostController, context) // Redirige después del login
+                        } else {
+                            // Error en el inicio de sesión con Google
+                            message.value = "Error: ${task.exception?.message}"
                         }
+                    }
                 }
             } catch (e: ApiException) {
+                // Maneja errores específicos de Google Sign-In
                 message.value = "Error en Google Sign-In: ${e.message}"
                 Log.e("GoogleSignIn", "Error", e)
             }
         }
     }
 
+    // UI de la pantalla de inicio de sesión
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFEDF1F3)),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
-        // Icono superior
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Icono del logo
         Icon(
             painter = painterResource(id = R.drawable.ic_logo),
             contentDescription = "Logo",
             modifier = Modifier.size(64.dp),
             tint = Color(0xFF007AFF)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Inicia Sesión", fontSize = 28.sp, color = Color(0xFF1F1F1F))
+
+        // Título
+        Text(
+            text = "Inicia Sesión",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1F1F1F),
+            textAlign = TextAlign.Center
+        )
+
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Subtítulo
         Text(
             text = "Ingresa tu correo electrónico y contraseña para iniciar sesión",
             fontSize = 14.sp,
-            color = Color(0xFF5A5A5A)
+            color = Color(0xFF5A5A5A),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Campo de correo
+        // Campo de correo electrónico
         OutlinedTextField(
             value = email.value,
             onValueChange = { email.value = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(0.85f)
+            label = { Text("Email", color = Color.Gray) },
+            placeholder = { Text("yourname@gmail.com", color = Color.Gray) },
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(56.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color(0xFFF5F5F5),
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.Black
+            ),
+            singleLine = true
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
         // Campo de contraseña
         OutlinedTextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Contraseña") },
+            label = { Text("Contraseña", color = Color.Gray) },
+            placeholder = { Text("******", color = Color.Gray) },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(0.85f)
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(56.dp),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = Color(0xFFF5F5F5),
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                cursorColor = Color.Black
+            ),
+            singleLine = true
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botón de inicio de sesión
+        Row(
+            modifier = Modifier.fillMaxWidth(0.85f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = rememberMe.value,
+                onCheckedChange = { rememberMe.value = it },
+                colors = CheckboxDefaults.colors(Color.Gray)
+            )
+
+            Text(text = "Recuérdame", color = Color.Gray)
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "¿Olvidaste tu contraseña?",
+                color = Color(0xFF007AFF),
+                modifier = Modifier.clickable { navHostController.navigate("pantallaRecuperarContrasena") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botón de iniciar sesión
         Button(
             onClick = {
-                loginUser(auth, email.value.text, password.value.text, navHostController, message)
+                loginUser(auth, email.value, password.value, navHostController, message, context)
             },
-            modifier = Modifier.fillMaxWidth(0.85f),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Iniciar Sesión", color = Color.White)
+            Text(text = "Iniciar sesión", color = Color.White, fontWeight = FontWeight.SemiBold)
         }
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botón de inicio de sesión con Google
+        // Separador -- o --
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(0.85f)
+        ) {
+            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.weight(1f))
+            Text(
+                text = " o ",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Botón de Google
         Button(
             onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp)),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Google Icon",
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Iniciar sesión con Google", color = Color.Black)
-            }
+            Icon(
+                painter = painterResource(id = R.drawable.ic_google),
+                contentDescription = "Google Icon",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Continuar con Google", color = Color.Black)
         }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Mensaje de estado
-        if (message.value.isNotEmpty()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
             Text(
-                text = message.value,
-                color = if (message.value.startsWith("Error")) Color.Red else Color.Green
+                text = "¿No tienes una cuenta? ",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+            Text(
+                text = "Registrarse",
+                color = Color(0xFF007AFF),
+                fontSize = 14.sp,
+                modifier = Modifier.clickable { navHostController.navigate("PantallaRegistro") }
             )
         }
     }
 }
 
+// Función para gestionar el flujo después del inicio de sesión exitoso
+fun handlePostLogin(navHostController: NavHostController, context: Context) {
+    val authMethod = leerPreferencia(context, "auth_method")
+    if (authMethod.isNullOrEmpty()) {
+        navHostController.navigate("pantallaConfigurarPin") // Si no está configurado, navega para configurar el PIN
+    } else {
+        navHostController.navigate("pantallaAccesoSeguro") // Si ya está configurado, navega a la pantalla de acceso seguro
+    }
+}
+
+// Función para iniciar sesión con email y contraseña
 fun loginUser(
     auth: FirebaseAuth,
     email: String,
     password: String,
     navHostController: NavHostController,
-    message: MutableState<String>
+    message: MutableState<String>,
+    context: Context
 ) {
     if (email.isNotBlank() && password.isNotBlank()) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 message.value = "Inicio de sesión exitoso"
-                navHostController.navigate("PantallaMenu")
+                handlePostLogin(navHostController, context)
             } else {
                 message.value = "Error: ${task.exception?.message}"
             }
@@ -174,4 +292,21 @@ fun loginUser(
     } else {
         message.value = "Por favor completa todos los campos"
     }
+}
+
+// Leer datos de configuración desde almacenamiento cifrado
+fun leerPreferencia(context: Context, key: String): String? {
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    val sharedPreferences = EncryptedSharedPreferences.create(
+        context,
+        "user_preferences",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    return sharedPreferences.getString(key, null)
 }
