@@ -1,6 +1,6 @@
 package com.example.proyectocrm.scenes
 
-import android.net.Uri
+import ContactosViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,133 +24,136 @@ import com.example.proyectocrm.models.Contacto
 @Composable
 fun PantallaChat(
     navHostController: NavHostController,
-    contacto: Contacto,
-    onDelete: (Contacto) -> Unit // Recibe la función para eliminar
+    viewModel: ContactosViewModel
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Contacto") },
-                navigationIcon = {
-                    IconButton(onClick = { navHostController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = Color.Black)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Más acciones */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones", tint = Color.Black)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
+    val contactoSeleccionado = viewModel.contactoSeleccionado.collectAsState().value
+
+    contactoSeleccionado?.let { contacto ->
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(text = "Contacto") },
+                    navigationIcon = {
+                        IconButton(onClick = { navHostController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = Color.Black)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Más acciones */ }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Más opciones", tint = Color.Black)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White,
+                        titleContentColor = Color.Black
+                    )
                 )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-        ) {
-            // Sección superior con foto e información principal
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF007AFF))
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
+                // Sección superior con foto e información principal
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF007AFF))
+                    ) {
+                        Text(
+                            text = contacto.nombre.firstOrNull()?.toString() ?: "",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = contacto.nombre,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = contacto.rol,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Sección de información
+                Text(
+                    text = "Información",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Text(
-                        text = contacto.nombre.first().toString(),
-                        color = Color.White,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = contacto.nombre,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = contacto.rol,
+                        text = "Diseñador UI/UX en Logic\nJefe de Proyecto: Nicholas Gordon",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = Color.Gray,
+                        modifier = Modifier.padding(16.dp)
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Sección de información
-            Text(
-                text = "Información",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
+                // Sección de categorías
                 Text(
-                    text = "Diseñador UI/UX en Logic\nJefe de Proyecto: Nicholas Gordon",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(16.dp)
+                    text = "Categorías",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sección de categorías
-            Text(
-                text = "Categorías",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Text(
-                    text = "Diseñadores",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sección de detalles
-            Text(
-                text = "Detalles",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "✉️ ${contacto.email}", color = Color.Gray)
-                    Text(text = "📞 ${contacto.telefono}", color = Color.Gray)
-                    Text(text = "📍 ${contacto.direccion}", color = Color.Gray)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Text(
+                        text = "Diseñadores",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Sección de detalles
+                Text(
+                    text = "Detalles",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "✉️ ${contacto.email}", color = Color.Gray)
+                        Text(text = "📞 ${contacto.telefono}", color = Color.Gray)
+                        Text(text = "📍 ${contacto.direccion}", color = Color.Gray)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
-    }
+    } ?: Text("No se ha seleccionado ningún contacto.") // Manejo de null
 }

@@ -156,8 +156,8 @@ fun ContactoCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                // Acción al hacer clic en la tarjeta (puede navegar al detalle del contacto)
-                navHostController.navigate("pantallaChat/${Uri.encode(contacto.nombre)}")
+                viewModel.seleccionarContacto(contacto) // Selecciona el contacto
+                navHostController.navigate("pantallaChat") // Navega sin parámetros
             },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
