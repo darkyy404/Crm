@@ -37,10 +37,10 @@ data class Archivo(val nombre: String, val tipo: String)
 @Composable
 fun PantallaArchivos(
     navHostController: NavHostController,
-    archivos: List<Archivo>, // Lista de archivos
+    archivos: List<Archivo>, // Lista inicial de archivos
     onArchivoClick: (Archivo) -> Unit // Acción al hacer clic en un archivo
 ) {
-    // Scope para operaciones asíncronas
+    // Scope para manejar operaciones asíncronas
     val scope = rememberCoroutineScope()
 
     // Referencia al almacenamiento de Firebase
@@ -49,31 +49,33 @@ fun PantallaArchivos(
     // URI del archivo seleccionado
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Lista de archivos en estado mutable para actualizar la UI
+    // Estado mutable para la lista de archivos (para reflejar cambios en la UI)
     var archivosState by remember { mutableStateOf(archivos) }
 
-    // Configuración del lanzador para seleccionar archivos
+    // Lanzador para abrir el selector de archivos
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         selectedFileUri = uri // Guardamos el archivo seleccionado
         uri?.let {
             scope.launch(Dispatchers.IO) {
-                // Subir archivo a Firebase y actualizar la lista
+                // Subir archivo a Firebase y actualizar la lista local
                 val nuevoArchivo = subirArchivoAFirebase(it, storageRef)
                 nuevoArchivo?.let { archivo ->
-                    archivosState = archivosState + archivo // Actualizar la lista con el nuevo archivo
+                    archivosState = archivosState + archivo // Agregar el nuevo archivo a la lista
                 }
             }
         }
     }
 
-    // Mostrar pantalla según si hay archivos o no
+    // Verificar si hay archivos en la lista para decidir qué pantalla mostrar
     if (archivosState.isEmpty()) {
+        // Pantalla para cuando no hay archivos
         PantallaSinArchivos(navHostController) {
             filePickerLauncher.launch("*/*") // Abrir el selector de archivos
         }
     } else {
+        // Pantalla para cuando hay archivos
         PantallaConArchivos(navHostController, archivosState, onArchivoClick) {
             filePickerLauncher.launch("*/*") // Abrir el selector de archivos
         }
@@ -251,15 +253,24 @@ fun BottomNavigationBar(navHostController: NavHostController) {
 // Función suspendida para subir un archivo a Firebase Storage
 suspend fun subirArchivoAFirebase(uri: Uri, storageRef: StorageReference): Archivo? {
     return try {
-        val fileName = UUID.randomUUID().toString() // Generar un nombre único
-        val uploadTask = storageRef.child("uploads/$fileName").putFile(uri).await()
-        val downloadUrl = storageRef.child("uploads/$fileName").downloadUrl.await()
+        // Generar un nombre único para el archivo
+        val fileName = UUID.randomUUID().toString()
+        val fileRef = storageRef.child("uploads/$fileName")
 
-        // Crear un objeto Archivo con el nombre y tipo genérico
-        Archivo(nombre = fileName, tipo = "generic") // Cambia "generic" según tu lógica
+        // Subir el archivo al almacenamiento de Firebase
+        fileRef.putFile(uri).await()
+
+        // Obtener la URL de descarga del archivo subido
+        val downloadUrl = fileRef.downloadUrl.await()
+
+        // Retornar un objeto Archivo representando el archivo subido
+        Archivo(
+            nombre = fileName, // Nombre generado
+            tipo = uri.toString().substringAfterLast('.').ifEmpty { "Desconocido" } // Extraer tipo del URI
+        )
     } catch (e: Exception) {
-        e.printStackTrace()
-        null
+        e.printStackTrace() // Loguear el error
+        null // Retornar null en caso de error
     }
 }
 
