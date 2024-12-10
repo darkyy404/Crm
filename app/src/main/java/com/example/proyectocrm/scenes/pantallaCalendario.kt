@@ -99,7 +99,7 @@ fun PantallaCalendario(navHostController: NavHostController) {
                 }
                 // Botón para navegar al menú
                 IconButton(
-                    onClick = { navHostController.navigate("pantallaArchivo") },
+                    onClick = { navHostController.navigate("pantallaArchivos") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color(0xFF007AFF))
