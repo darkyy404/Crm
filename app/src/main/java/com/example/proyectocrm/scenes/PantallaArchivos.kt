@@ -1,26 +1,34 @@
+
 package com.example.proyectocrm.scenes
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.proyectocrm.R
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.*
+
 
 // Modelo de datos para representar archivos
 data class Archivo(val nombre: String, val tipo: String)
@@ -29,20 +37,55 @@ data class Archivo(val nombre: String, val tipo: String)
 @Composable
 fun PantallaArchivos(
     navHostController: NavHostController,
-    archivos: List<Archivo>
+    archivos: List<Archivo>, // Lista de archivos
+    onArchivoClick: (Archivo) -> Unit // Acción al hacer clic en un archivo
 ) {
-    // Determina qué pantalla mostrar basado en si existen archivos
-    if (archivos.isEmpty()) {
-        PantallaSinArchivos(navHostController)
+    // Scope para operaciones asíncronas
+    val scope = rememberCoroutineScope()
+
+    // Referencia al almacenamiento de Firebase
+    val storageRef = FirebaseStorage.getInstance().reference
+
+    // URI del archivo seleccionado
+    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Lista de archivos en estado mutable para actualizar la UI
+    var archivosState by remember { mutableStateOf(archivos) }
+
+    // Configuración del lanzador para seleccionar archivos
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        selectedFileUri = uri // Guardamos el archivo seleccionado
+        uri?.let {
+            scope.launch(Dispatchers.IO) {
+                // Subir archivo a Firebase y actualizar la lista
+                val nuevoArchivo = subirArchivoAFirebase(it, storageRef)
+                nuevoArchivo?.let { archivo ->
+                    archivosState = archivosState + archivo // Actualizar la lista con el nuevo archivo
+                }
+            }
+        }
+    }
+
+    // Mostrar pantalla según si hay archivos o no
+    if (archivosState.isEmpty()) {
+        PantallaSinArchivos(navHostController) {
+            filePickerLauncher.launch("*/*") // Abrir el selector de archivos
+        }
     } else {
-        PantallaConArchivos(navHostController, archivos)
+        PantallaConArchivos(navHostController, archivosState, onArchivoClick) {
+            filePickerLauncher.launch("*/*") // Abrir el selector de archivos
+        }
     }
 }
-
 // Pantalla para el caso donde NO hay archivos
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaSinArchivos(navHostController: NavHostController) {
+fun PantallaSinArchivos(
+    navHostController: NavHostController,
+    onUploadClick: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -55,24 +98,14 @@ fun PantallaSinArchivos(navHostController: NavHostController) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Acción para subir un archivo */ },
+                onClick = onUploadClick, // Acción para seleccionar archivo
                 containerColor = Color(0xFF007AFF)
             ) {
-                Text("Upload", color = Color.White)
+                Text("Subir", color = Color.White)
             }
         },
         bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White,
-                contentColor = Color.Gray
-            ) {
-                IconButton(
-                    onClick = { navHostController.navigate("home") },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Inicio", tint = Color(0xFF007AFF))
-                }
-            }
+            BottomNavigationBar(navHostController)
         }
     ) { paddingValues ->
         Column(
@@ -83,22 +116,15 @@ fun PantallaSinArchivos(navHostController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_no_files), // Reemplaza con tu recurso de imagen
+                painter = painterResource(id = R.drawable.ic_no_files),
                 contentDescription = "No hay archivos",
                 modifier = Modifier.size(150.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No files and folders found",
+                text = "No hay archivos disponibles",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Try to upload more files to your storage or create a new folder from your desktop.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp)
             )
         }
     }
@@ -109,7 +135,9 @@ fun PantallaSinArchivos(navHostController: NavHostController) {
 @Composable
 fun PantallaConArchivos(
     navHostController: NavHostController,
-    archivos: List<Archivo>
+    archivos: List<Archivo>,
+    onArchivoClick: (Archivo) -> Unit,
+    onUploadClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -118,56 +146,30 @@ fun PantallaConArchivos(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
                     titleContentColor = Color.Black
-                ),
-                actions = {
-                    IconButton(onClick = { /* Implementar búsqueda o acciones extra */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones", tint = Color.Black)
-                    }
-                }
+                )
             )
         },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = Color.White,
-                contentColor = Color.Gray
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onUploadClick, // Acción para seleccionar archivo
+                containerColor = Color(0xFF007AFF)
             ) {
-                IconButton(
-                    onClick = { navHostController.navigate("home") },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Inicio", tint = Color(0xFF007AFF))
-                }
+                Text("Subir", color = Color.White)
             }
+        },
+        bottomBar = {
+            BottomNavigationBar(navHostController)
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Mis Archivos",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "Archivos que pertenecen a ti",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(archivos) { archivo ->
-                    ArchivoItem(archivo)
+            items(archivos) { archivo ->
+                ArchivoItem(archivo = archivo) {
+                    onArchivoClick(archivo)
                 }
             }
         }
@@ -176,11 +178,12 @@ fun PantallaConArchivos(
 
 // Componente para cada ítem de archivo
 @Composable
-fun ArchivoItem(archivo: Archivo) {
+fun ArchivoItem(archivo: Archivo, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(56.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -189,40 +192,74 @@ fun ArchivoItem(archivo: Archivo) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(16.dp)
         ) {
-            // Icono del archivo según su tipo
             val icono = when (archivo.tipo) {
-                "pdf" -> R.drawable.ic_pdf // Reemplaza con tu recurso de ícono PDF
-                "docx" -> R.drawable.ic_word // Reemplaza con tu recurso de ícono Word
-                "pptx" -> R.drawable.ic_ppt // Reemplaza con tu recurso de ícono PPT
-                else -> R.drawable.ic_folder // Reemplaza con un ícono genérico
+                "pdf" -> R.drawable.ic_pdf
+                "docx" -> R.drawable.ic_word
+                else -> R.drawable.ic_folder
             }
-
             Image(
                 painter = painterResource(id = icono),
-                contentDescription = "Icono de archivo",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF5F5F5))
+                contentDescription = "Archivo",
+                modifier = Modifier.size(40.dp)
             )
-
             Spacer(modifier = Modifier.width(16.dp))
-
-            // Nombre del archivo
             Text(
                 text = archivo.nombre,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.weight(1f)
+                fontWeight = FontWeight.Bold
             )
-
-            // Botón de más opciones
-            IconButton(onClick = { /* Implementar menú de opciones */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.Gray)
-            }
         }
     }
 }
+
+// Componente de barra de navegación inferior
+@Composable
+fun BottomNavigationBar(navHostController: NavHostController) {
+    BottomAppBar(
+        containerColor = Color.White,
+        contentColor = Color.Gray
+    ) {
+        IconButton(
+            onClick = { navHostController.navigate("pantallaHome") },
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Home, contentDescription = "Inicio", tint = Color(0xFF007AFF))
+        }
+        IconButton(
+            onClick = { navHostController.navigate("pantallaContactos") },
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Contacts, contentDescription = "Contactos", tint = Color(0xFF007AFF))
+        }
+        IconButton(
+            onClick = { navHostController.navigate("pantallaCalendario") },
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = Color(0xFF007AFF))
+        }
+        IconButton(
+            onClick = { navHostController.navigate("pantallaArchivos") },
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(Icons.Default.Menu, contentDescription = "Archivos", tint = Color(0xFF007AFF))
+        }
+    }
+}
+
+// Función suspendida para subir un archivo a Firebase Storage
+suspend fun subirArchivoAFirebase(uri: Uri, storageRef: StorageReference): Archivo? {
+    return try {
+        val fileName = UUID.randomUUID().toString() // Generar un nombre único
+        val uploadTask = storageRef.child("uploads/$fileName").putFile(uri).await()
+        val downloadUrl = storageRef.child("uploads/$fileName").downloadUrl.await()
+
+        // Crear un objeto Archivo con el nombre y tipo genérico
+        Archivo(nombre = fileName, tipo = "generic") // Cambia "generic" según tu lógica
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+

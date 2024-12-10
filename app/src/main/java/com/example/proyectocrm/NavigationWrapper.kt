@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.proyectocrm.models.Contacto
+import com.example.proyectocrm.scenes.PantallaArchivos
 import com.example.proyectocrm.scenes.PantallaChat
 import com.example.proyectocrm.scenes.PantallaCrearContacto
 import com.example.proyectocrm.scenes.PantallaEditarContacto
@@ -68,6 +69,17 @@ fun NavigationWrapper(navHostController: NavHostController, viewModel: Contactos
         composable(route = "pantallaEditarContacto") {
             PantallaEditarContacto(navHostController, viewModel)
         }
+
+        // Pantalla Archivos
+        composable(route = "pantallaArchivos") {
+            PantallaArchivos(
+                navHostController = navHostController,
+                archivos = emptyList(), // Lista vacía para iniciar sin datos
+                onArchivoClick = {} // Función vacía para manejar clics en los archivos
+            )
+        }
+
+
 
     }
 }

@@ -82,7 +82,7 @@ fun PantallaContactos(
                     Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = Color(0xFF007AFF))
                 }
                 IconButton(
-                    onClick = { navHostController.navigate("pantallaMenu") },
+                    onClick = { navHostController.navigate("pantallaArchivos") },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.Menu, contentDescription = "Menú", tint = Color(0xFF007AFF))
