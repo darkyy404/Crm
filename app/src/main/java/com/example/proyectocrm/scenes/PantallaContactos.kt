@@ -106,9 +106,10 @@ fun PantallaContactos(
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.Gray)
                 },
-                trailingIcon = {
-                    Icon(Icons.Default.FilterList, contentDescription = "Filtrar", tint = Color.Gray)
-                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(0xFF007AFF), // Color del borde cuando está seleccionado
+                    unfocusedBorderColor = Color.Gray      // Color del borde cuando no está seleccionado
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
